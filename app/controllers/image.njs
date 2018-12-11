@@ -17,9 +17,16 @@ var actions = {
 		let page = this.params.request.get.page || 1
 		let pageSize = this.params.request.get.page_size || 100
         let images = await Maimeng.searchAsync(str, page, pageSize)
-        let random = Math.floor(Math.random() * pageSize)
+        console.log(images)
+        if (images.code !== 0) {
+        	return ''
+        }
+        let images_count = images.data.length
+        if (images_count === 0) {
+        	return ''
+        }
+        let random = Math.floor(Math.random() * images_count)
         let image = images.data[random].images
-        console.log(image)
         return image
     }
 }
