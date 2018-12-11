@@ -13,11 +13,10 @@ var actions = {
         return data
     },
     search: async function () {
-    	let str = this.params.request.get.s || '美女'
+    	let str = this.params.request.get.s || '美图'
 		let page = this.params.request.get.page || 1
 		let pageSize = this.params.request.get.page_size || 100
         let images = await Maimeng.searchAsync(str, page, pageSize)
-        console.log(images)
         if (images.code !== 0) {
         	return ''
         }
@@ -27,7 +26,9 @@ var actions = {
         }
         let random = Math.floor(Math.random() * images_count)
         let image = images.data[random].images
-        return image
+        index = image.lastIndexOf("\/")
+        image = image.substring(index + 1)
+        return Maimeng.static + '/' + image
     }
 }
 
