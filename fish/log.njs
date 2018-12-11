@@ -28,6 +28,10 @@ class Log {
     var msg = `\n>>> ${info}`
     fs.appendFile(log_file_name, msg, 'utf8', function () {})
   }
+
+  warn(messsage, catelog) {
+    
+  }
 }
 
 module.exports = Log
