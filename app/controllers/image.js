@@ -10,7 +10,7 @@ var actions = {
     let ect = this.params.request.get.ect
     return {
       'name': name,
-      'image': image + '.' + ect,
+      'image': Maimeng.static + '/' + image + '.' + ect,
     }
   },
   search: async function () {
@@ -30,7 +30,7 @@ var actions = {
     let index = image.lastIndexOf('/')
     image = image.substring(index + 1)
     let imageInfo = image.split('.')
-    image = Maimeng.static + '/' + imageInfo[0]
+    image = imageInfo[0]
     return encodeURI(`http://127.0.0.1:8989/image/show?name=${str}&image=${image}&ect=${imageInfo.pop()}`)
   },
 }
