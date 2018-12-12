@@ -1,6 +1,6 @@
 var path = require('path')
 var fs = require('fs')
-var config = require('../app/config.njs')
+var config = require('../app/config')
 
 const __APP__ = 'app'
 

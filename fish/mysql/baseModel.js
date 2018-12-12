@@ -1,8 +1,8 @@
 var mysql  = require('mysql');
 var async = require('async')
 var path = require('path')
-var config = require(path.join(__dirname, '../../app/config.njs'))
-var mutils = require(path.join(config.path.fish, 'mutils.njs'))
+var config = require(path.join(__dirname, '../../app/config'))
+var mutils = require(path.join(config.path.fish, 'mutils'))
 
 const DB_POOL = mysql.createPool(config.mysql)
 

@@ -1,8 +1,8 @@
 var url = require('url')
 var fs = require('fs')
-var config = require('../app/config.njs')
+var config = require('../app/config')
 var path  = require('path')
-var Throw = require(path.join(config.path.fish, 'throw.njs'))
+var Throw = require(path.join(config.path.fish, 'throw'))
 
 const PATH = config.path
 
@@ -89,8 +89,8 @@ async function getActionInfo(req) {
  * @returns {}|bool 若路由存在返回数据对象，否则返回 false
  */
 async function getPageData(actionInfo) {
-    var controllerPath = path.join(PATH.app, 'controllers/' + actionInfo[0] + '.njs')
-    // @TODO: 暂时不考虑区分模块，以后需做完善
+    var controllerPath = path.join(PATH.app, 'controllers/' + actionInfo[0] + '.js')
+    // TODO: 暂时不考虑区分模块，以后需做完善
     // 判断控制器文件是否存在
     var exists = fs.existsSync(controllerPath)
     if (exists) {

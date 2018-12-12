@@ -1,10 +1,4 @@
-'use strict'
-
-/**
- * ESLint configuration file for *.js (ES5)
- */
-
-module.exports = {
+{
   "env": {
     "browser": true,
     "node": true

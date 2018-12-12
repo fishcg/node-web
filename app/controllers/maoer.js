@@ -7,9 +7,9 @@ var iconv = require("iconv-lite");
 var querystring = require("querystring")
 var syncRequest = require('sync-request')
 
-const config = require(path.join(__dirname, '../config.njs'))
-const mutils = require(path.join(config.path.fish, 'mutils.njs'))
-const Log = require(path.join(config.path.fish, 'log.njs'))
+const config = require(path.join(__dirname, '../config.js'))
+const mutils = require(path.join(config.path.fish, 'mutils.js'))
+const Log = require(path.join(config.path.fish, 'log.js'))
 
 const MAOER_DOMAIN = 'www.missevan.com'
 const MAOER_STATIC = 'http://static.missevan.com'

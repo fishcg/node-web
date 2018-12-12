@@ -1,4 +1,4 @@
-var Fish = require('../fish/fish-route.njs')
+var Fish = require('../fish/fish-route')
 var path  = require('path')
 
 exports.serve = function (req, res) {

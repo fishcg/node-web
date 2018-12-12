@@ -2,7 +2,7 @@ var http = require('http')
 var static = require('node-static')
 var url = require('url')
 var util = require('util')
-var index = require('./public/index.njs')
+var index = require('./public/index')
 
 
 

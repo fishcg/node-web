@@ -1,8 +1,8 @@
 var path = require('path')
-var config = require(path.join(__dirname, '../config.njs'))
-var News = require(path.join(config.path.app, 'models/News.njs'))
+var config = require(path.join(__dirname, '../config'))
+var News = require(path.join(config.path.app, 'models/News'))
 var async = require('async')
-var Throw = require(path.join(config.path.fish, 'throw.njs'))
+var Throw = require(path.join(config.path.fish, 'throw'))
 
 var Fish = {}
 

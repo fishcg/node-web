@@ -1,7 +1,7 @@
 var path = require('path')
 
-var config = require(path.join(__dirname, '../config.njs'))
-var Log = require(path.join(config.path.fish, 'log.njs'))
+var config = require(path.join(__dirname, '../config'))
+var Log = require(path.join(config.path.fish, 'log'))
 var Email = require(path.join(config.path.root, 'lib/Email.js'))
 
 // @todo: 需要在基类定义
