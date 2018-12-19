@@ -36,7 +36,7 @@ var Fish = {
     return document.documentElement.clientHeight || document.body.clientHeight
 
   },
-q
+
   // 滚动条是否到了底部
   isBottom: function () {
     return this.getScrollTop() + this.getWindowHeight() == this.getScrollHeight()
