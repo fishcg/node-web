@@ -54,10 +54,15 @@ class Model {
         }
         return this
     }
-    limit(number) {
-        number = parseInt(number)
-        if (number < 0) number = 0
-        this.queryObj.limit = number
+    limit(offset, count) {
+        offset = parseInt(offset)
+        count = count || null
+        if (offset < 0) offset = 0
+        if (!count) {
+            this.queryObj.limit = offset
+        } else {
+            this.queryObj.limit = `${offset}, ${count}`
+        }
         return this
     }
     order(str) {

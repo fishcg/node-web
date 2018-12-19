@@ -1,9 +1,28 @@
+const Topic = require('../models/Topic.js')
 const Maimeng = require('../../lib/Maimeng')
+const R = require('ramda')
 
 var Fish = {}
 
 var actions = {
   params: {},
+  topic: async function () {
+    return {}
+  },
+  gettopics: async function () {
+    let page = this.params.request.get.page ? parseInt(this.params.request.get.page) : 1
+    let pageSize = this.params.request.get.page_size ? parseInt(this.params.request.get.page_size) : 20
+    let offset = pageSize * (page - 1)
+    let topics = await Topic.model.find()
+      .select('id, title, cover')
+      .limit(offset, pageSize)
+      .order('id ASC')
+      .all()
+    R.map((topic) => {
+      topic.cover = '/image/topic/' + topic.cover
+    }, topics)
+    return topics
+  },
   show: async function () {
     let name = this.params.request.get.name || '美图'
     let image = this.params.request.get.image
