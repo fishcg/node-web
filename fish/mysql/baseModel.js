@@ -104,7 +104,6 @@ class Model {
         fields = attrsNameArr.join(', ')
         values = valuesArr.join(', ')
         var sql = 'INSERT INTO `' + db + '`.`' + table + '` (' + fields + ') VALUES (' + values + ')'
-        console.log(sql)
         var data = await this.queryDB(sql, this.queryObj.params)
         return data
     }
@@ -122,7 +121,6 @@ class Model {
         if (this.queryObj.limit !== null) {
             sql += ' LIMIT ' + this.queryObj.limit
         }
-        console.log(sql)
         var data = await this.queryDB(sql, this.queryObj.params)
         return data
     }

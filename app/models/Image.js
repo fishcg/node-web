@@ -2,23 +2,25 @@ const path = require('path')
 const config = require(path.join(__dirname, '../../app/config'))
 const baseModel = require(path.join(config.path.fish, 'mysql/baseModel'))
 
-class Topic extends baseModel.model {
+class Image extends baseModel.model {
   getTable() {
-    return 'lab_topic'
+    return 'lab_image'
   }
   fields() {
-    let fields = ['id', 'title', 'cover', 'create_time', 'update_time']
+    let fields = ['id', 'p_id', 'url', 'topic_id', 'name', 'create_time', 'update_time']
     return fields
   }
   attributeLabels() {
     return {
       id: 'ID',
-      title: '专题名称',
-      cover: '专题封面',
+      p_id: 'P站 ID',
+      url: '图片地址',
+      topic_id: '归属专题 ID',
+      name: '名称',
       create_time: '创建时间',
       update_time: '修改时间',
     }
   }
 }
 
-exports.model = new Topic()
+exports.model = new Image()

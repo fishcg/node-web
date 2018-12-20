@@ -1,6 +1,6 @@
 @import url(https://fonts.googleapis.com/css?family=Sahitya);
 
-#topic li {
+#topic a {
     margin: 10px;
     position: relative;
     width: 200px;

@@ -9,9 +9,9 @@
     <meta name="keywords" content="二次元,动漫,宅，ACG,新闻,声优">
     <meta itemprop="name" content="动漫新闻屋">
     <title>动漫新闻屋</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/topic-view.css" rel="stylesheet">
     <link href="/css/index.css" rel="stylesheet">
-    <link href="/css/topic-image.css" rel="stylesheet">
-
 </head>
 <style>
     body {
@@ -223,22 +223,37 @@
     </div>
 </div>
 <!-- 主体内容 -->
-<div id="vue-content" class="content">
-    <div id="topic">
-        <ul class='-center'>
-          <a v-for="topic in topics" class="topic" :href="'/image/topicview?id=' + topic.id">
-                <div class='w'>
-                  <div class='f'>
-                    <svg viewBox='0 0 200 200'>
-                      <image height='100%' preserveAspectRatio='xMidYMid slice' width='100%' :xlink:href="topic.cover"></image>
-                    </svg>
-                  </div>
-                  <div class='b'>
-                    <h4>{{topic.title}}</h4>
-                  </div>
-                </div>
-          </a>
-        </ul>
+<div id="loader-wrapper">
+    <div id="loader"></div>
+</div>
+<div id="vue-content" class="contentss">
+    <div class="content-bg"></div>
+    <div class="bg-overlay"></div>
+    <!-- MAIN POSTS -->
+    <div class="main-posts">
+        <div id="title"><h1>{=title=}</h1></div>
+        <div class="container">
+            <div class="row">
+                <ul class="blog-masonry masonry-true">
+                    <li v-for="image in images" class="post-masonry col-md-4 col-sm-6">
+                        <div class="post-thumb">
+                            <img :src="image.url" alt="">
+                            <div class="title-over">
+                                <h4><a :href="image.url" target="_blank">P站 ID：{{image.p_id}}</a></h4>
+                            </div>
+                            <div class="post-hover text-center">
+                                <div class="inside">
+                                    <i class="fa fa-plus"></i>
+                                    <!--<span class="date">25 Jan 2084</span>-->
+                                    <h4><a :href="image.url" target="_blank">P站 ID：{{image.p_id}}</a></h4>
+                                    <!--<p>简介</p>-->
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
 <!-- 页脚 -->
@@ -253,46 +268,48 @@
         </div>
     </div>
 </div>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/topicview/plugins.min.js"></script>
+<script src="/js/topicview/main.min.js"></script>
 <script src="/js/vue.js"></script>
 <script src="/js/vue-ajax-min.js"></script>
-<script src="/js/topic-image.js"></script>
-<script src="/js/fish.js"></script>
+
+
 <script>
-window.onload = function(){
-  var lockGetTopics = 0
+
+window.onload = function () {
+  var id = {=id=}
   var vm = new Vue({
     el: '#vue-content',
     data: {
-      page: 1,
-      topics: [],
+      images: [],
     },
     updated: function(){
-      new DAH(document.querySelectorAll('#topic a'))
+
+      //setTimeout(function () {
+        $('#loader').fadeOut(); // will first fade out the loading animation
+        $('#loader-wrapper').delay(350).fadeOut('slow', imageStyle); // will fade out the white DIV that covers the website.
+        $('body').delay(350).css({'overflow-y':'visible'})
+
+      //}, 100)
+
     },
     mounted: function () {
-      this.getTopics()
+
+      this.getImages()
+
     },
     methods:{
-      getTopics: function () {
-        //发送get请求
-        var page = this.page
-        if (lockGetTopics) return
-        lockGetTopics = 1
-        this.$http.get('/image/gettopics', { params:{ page: page } }).then(function (res) {
-          this.topics.push.apply(this.topics, res.body.info)
-          this.page += 1
-          lockGetTopics = 0
+      getImages: function () {
+        //发送 GET 请求
+        this.$http.get('/image/gettopicimages', { params: { id: id } }).then(function (res) {
+          this.images =  res.body.info
         },function(){
           console.log('请求失败处理')
         })
       },
     },
   })
-  window.onscroll = function(){
-    if (Fish.isBottom()) {
-      vm.getTopics()
-    }
-  }
 }
 </script>
 </body>
