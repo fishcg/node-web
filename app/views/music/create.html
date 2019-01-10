@@ -6,15 +6,169 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="keywords" content="二次元,动漫,宅，ACG,新闻,声优">
-    <meta itemprop="name" content="动漫新闻屋">
-    <title>动漫新闻屋</title>
+    <meta name="keywords" content="二次元,动漫,宅,ACG,新闻,声优">
+    <meta itemprop="name" content="幻想の城">
+    <title>幻想の城</title>
     <link href="/css/index.css" rel="stylesheet">
     <script src="/js/fish.js"></script>
     <script src="/js/axios.min.js"></script>
     <script src="/js/vue.js"></script>
 </head>
 <style>
+    .contribute-btn{
+        width: 66px;
+        height: 32px;
+        margin-left: -70px;
+        float: left;
+        background: #f37a5a;
+        color: #fff;
+        font-size: 13px;
+        line-height: 30px;
+        text-align: center;
+        border-radius: 5px;
+
+    }
+    .top{
+        margin-bottom: 30px;
+        zoom: 1;
+    }
+    .top-left {
+        width: 452px;
+        height: 250px;
+        float: left;
+    }
+    .top-left img {
+        width: 100%;
+        height: 100%;
+    }
+    .top-right {
+        position: relative;
+        margin-left: 20px;
+        height: 250px;
+        overflow: hidden;
+    }
+    .to-listen {
+        width: 100%;
+        height: 114px;
+        margin-left: 20px;
+        background: #666666;
+    }
+    .to-listen img {
+        width: 100%;
+        height: 100%;
+    }
+    .recommend {
+        margin-top: 16px;
+    }
+    .recommend-ele {
+        position: relative;
+        width: 152px;
+        height: 120px;
+        margin: 0 0 20px 20px;
+        float: left;
+        overflow: hidden;
+        border-radius: 4px;
+        background: #fff;
+    }
+    .recommend-ele img {
+        width: 100%;
+        height: 100%;
+    }
+    .recommend-ele .card-mark {
+        position: absolute;
+        left: 0;
+        top: 80px;
+        width: 150px;
+        height: 100%;
+        font-size: 12px;
+        height: 20px;
+        line-height: 20px;
+        padding: 10px 5px;
+        overflow: hidden;
+        background: #000;
+        text-decoration: none;
+        background: -webkit-linear-gradient(transparent,rgba(0,0,0,.1) 20%,rgba(0,0,0,.2) 35%,rgba(0,0,0,.6) 65%,rgba(0,0,0,.9));
+        background: -o-linear-gradient(transparent,rgba(0,0,0,.1) 20%,rgba(0,0,0,.2) 35%,rgba(0,0,0,.6) 65%,rgba(0,0,0,.9));
+        background: -webkit-gradient(linear,left top,left bottom,from(transparent),color-stop(20%,rgba(0,0,0,.1)),color-stop(35%,rgba(0,0,0,.2)),color-stop(65%,rgba(0,0,0,.6)),to(rgba(0,0,0,.9)));
+        background: linear-gradient(transparent,rgba(0,0,0,.1) 20%,rgba(0,0,0,.2) 35%,rgba(0,0,0,.6) 65%,rgba(0,0,0,.9));
+    }
+    .recommend-ele .card-mark .title {
+        color: #fff;
+        height: 40px;
+        overflow: hidden;
+        margin-bottom: 5px;
+        word-break: break-all;
+        word-wrap: break-word;
+    }
+    .module {
+        overflow: hidden;
+    }
+    .module-left {
+        width: 885px;
+        float: left;
+    }
+    .headline {
+        padding: 0 0 20px;
+    }
+    .module-name {
+        font-size: 24px;
+        line-height: 24px;
+        font-weight: 400;
+        margin-right: 20px;
+        float: left;
+    }
+    .module-elem {
+        position: relative;
+        width: 158px;
+        height: 151px;
+        margin: 0 19px 20px 0;
+        float: left;
+        overflow: hidden;
+        border-radius: 4px;
+    }
+    .module-elem-cover {
+        width: 100%;
+        height: 100px;
+        display: inline-block;
+    }
+    .module-elem-cover img {
+        width: 100%;
+        height: 100%;
+    }
+    .module-elem-title {
+        padding-top: 1px;
+        height: 40px;
+        line-height: 20px;
+        z-index: 100;
+        -webkit-transition: all .2s linear;
+        -o-transition: all .2s linear;
+        transition: all .2s linear;
+        color: #222;
+        word-wrap: break-word;
+        word-break: break-all;
+        overflow: hidden;
+        text-align: left;
+    }
+    .mudule-right {
+        width: 255px;
+        float: right;
+    }
+    .app-download img{
+        width: 100%;
+        height: 144px;
+    }
+    .adv-banner {
+        margin-bottom: 20px;
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 5px;
+        max-height: 96px;
+    }
+    .adv-banner img{
+        width: 100%;
+        height: 100%;
+    }
     .contribute-left {
         float: left;
     }
@@ -146,17 +300,11 @@
                         <a href="/news/index" target="_blank" title="动漫资讯" class="t">动漫资讯</a>
                     </li>
                     <li report-id="playpage_music" class="nav-item mbili">
-                        <a href="/music/index" target="_blank" title="来探索音乐的世界吧~" class="t">音乐</a>
-                    </li>
-                    <li report-id="playpage_game" class="nav-item game">
-                        <a href="//game.bilibili.com" target="_blank" title="番剧" class="t">番剧</a>
-                    </li>
-                    <li report-id="playpage_live" class="nav-item live">
-                        <a href="//live.bilibili.com" target="_blank" title="论坛" class="t">论坛</a>
+                        <a href="/image/topic" target="_blank" title="来探索画中的世界吧~" class="t">美图精选</a>
                     </li>
                     <li report-id="playpage_download" class="nav-item mobile">
                         <i class="b-icon b-icon-app"></i>
-                        <a id="header-mobile-app" href="#" target="_blank" title="下载APP" class="t">下载APP</a>
+                        <a id="header-mobile-app" href="#" title="下载APP" class="t">下载APP</a>
                     </li>
                 </ul>
             </div>
@@ -165,6 +313,7 @@
     <div id="banner_link" class="head-banner" scrollshow="true">
         <div class="head-content">
             <div class="search">
+                <a href="/music/create" class="contribute-btn">投 稿</a>
                 <form class="searchform">
                     <input type="text" placeholder="精彩资讯，一搜掌握~" value="" class="search-keyword">
                     <button type="submit" class="search-submit"></button>

@@ -15,40 +15,41 @@ var actions = {
     params: {},
     index: async() => {
 // 查询推荐音数据
-var recommendSounds = await
-Music.model.find()
+var recommendSounds = await Music.model.find()
     .select('id, subject, author, views, photo')
     .where('top = ?', [1])
     .limit(4)
     .all()
-var newSounds = await
-Music.model.find()
+var newSounds = await Music.model.find()
     .select('id, subject, photo')
     .limit(5)
     .order('created DESC')
     .all()
-var vocaloidSounds = await
-Music.model.find()
+var vocaloidSounds = await Music.model.find()
     .select('id, subject, photo')
     .limit(10)
     .order('RAND()')
     .all()
-var hotSounds = await
-Music.model.find()
+var hotSounds = await Music.model.find()
     .select('id, subject, photo')
     .where('hot = ?', [1])
     .limit(10)
     .order('created DESC')
+    .all()
+var otherSounds = await Music.model.find()
+    .select('id, subject, photo')
+    .limit(10)
+    .order('RAND()')
     .all()
 var data = {
     data: {
         recommendSounds: recommendSounds,
         newSounds: newSounds,
         vocaloidSounds: vocaloidSounds,
-        hotSounds: hotSounds
+        hotSounds: hotSounds,
+        otherSounds: otherSounds,
     }
 }
-// console.log(data)
 return data
 },
 play: async function () {

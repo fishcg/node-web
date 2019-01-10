@@ -75,7 +75,7 @@ async function getActionInfo(req) {
     var page = uri.pathname.substring(1).split('/')
     if (page.length === 1 && !page[0]) {
         // @TODO: 默认控制器与方法，后面改为配置中对此项进行配置
-        return ['site', 'index']
+        return ['music', 'index']
         // return ['news', 'index']
     }
     return page
@@ -99,7 +99,7 @@ async function getPageData(actionInfo) {
         controller.actions.params = Fish;
         var func = 'controller.actions.' + actionInfo[1] + '()'
         //try {
-            console.log(func)
+            // console.log(func)
             var data = eval(func)
             /*if (!data) {
                 var HttpException = new Throw.HttpException(400, '参数错误');

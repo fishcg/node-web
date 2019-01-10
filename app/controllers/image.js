@@ -43,7 +43,7 @@ var actions = {
     let topics = await Topic.model.find()
       .select('id, title, cover')
       .limit(offset, pageSize)
-      .order('id ASC')
+      .order('id DESC')
       .all()
     R.map((topic) => {
       topic.cover = '/image/topic/' + topic.cover
