@@ -122,7 +122,6 @@ var play = function (option) {
         canvas.addEventListener( 'mousemove', mouseMoveHandler, false );
         canvas.addEventListener( 'mouseenter', mouseEnterHandler, false );
         canvas.addEventListener( 'mouseleave', mouseLeaveHandler, false );
-        console.log(canvas)
         parentBox.appendChild( canvas );
 
 
@@ -159,13 +158,13 @@ var play = function (option) {
         btStart.addEventListener( 'mousedown', userStart, false );
 
         btLoadAudio = document.getElementById( 'btLoadAudio' );
-        btLoadAudio.addEventListener( 'change', loadAudioFileHandler, false );
+        // btLoadAudio.addEventListener( 'change', loadAudioFileHandler, false );
 
         labelLoadAudio = document.getElementById( 'labelLoadAudio' );
-        labelLoadAudio.style.display = 'none';
+        // labelLoadAudio.style.display = 'none';
 
         txtStatus = document.getElementById( 'txtStatus' );
-        txtStatus.innerHTML = 'Waiting Patiently For You... Please Click the Start Button.';
+        // txtStatus.innerHTML = 'Waiting Patiently For You... Please Click the Start Button.';
 
     };
 
@@ -219,11 +218,11 @@ var play = function (option) {
 
     function audioLoaded( e ) {
 
-        txtStatus.innerHTML = audioInfo;
+        // txtStatus.innerHTML = audioInfo;
 
         btStart.style.display = 'inline-block';
 
-        labelLoadAudio.style.display = 'inline-block';
+        // labelLoadAudio.style.display = 'inline-block';
 
     };
 
@@ -520,7 +519,6 @@ var play = function (option) {
             || document.body.clientWidth;
         h = canvas.parentNode.clientHeight || window.innerHeight || document.documentElement.clientHeight
             || document.body.clientHeight;
-        console.log(canvas.parentNode.clientHeight)
         canvas.width = w;
         canvas.height = h;
 

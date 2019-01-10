@@ -34,7 +34,7 @@ var handleReq = function (req, res) {
   }
   index.serve(req, res)
 }
-app.listen(80)
+app.listen(8989)
 
 // 在此处可配置监听的端口号
 // http.createServer(handleReq).listen(8787, '127.0.0.1')

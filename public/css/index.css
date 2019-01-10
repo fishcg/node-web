@@ -17,6 +17,9 @@ li {
 a {
     text-decoration: none;
 }
+.none {
+    display: none;
+}
 #model {
     position: fixed;
     width: 100%;

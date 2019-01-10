@@ -12,8 +12,7 @@ var actions = {
     index: async function () {
         var id = this.params.request.get.id
         // 查询数据
-        var news = await News.model.select('id, title, cover, intro, creator').where('id < 10').all()
-        console.log({news: news})
+        var news = await News.model.select('id, title, cover, intro, creator').where('id < 20').all()
         return {news: news}
     },
     view: function () {
