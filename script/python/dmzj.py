@@ -19,7 +19,7 @@ class DmzjCrawler():
     x = 0
     taskNum = 0
     # 爬取第几页，进程运行时自增
-    page = 1
+    page = 60
     # 请求头
     headers = {
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -54,7 +54,7 @@ class DmzjCrawler():
             f.write(image.content)
             f.close()
             self.x += 1
-            print('已下载第', self.x ,'张')
+            # print('已下载第', self.x ,'张')
 
     # 获得图片地址
     def getImages(self, url, title):
@@ -96,14 +96,14 @@ class DmzjCrawler():
             html = r.text
             soup = BeautifulSoup(html, 'html.parser')
             # 获取相关美图文章的链接
-            links = soup.find_all('a', class_='dec_img', limit = 1)
+            links = soup.find_all('a', class_='dec_img')
             if len(links) == 0:
                 self.page = -1
             for link in links:
                 url = link['href']
                 title = link['title']
                 self.getImages(url, title)
-            self.page += 1
+            self.page -= 1
         except Exception as e:
             # TODO: log
             return
@@ -113,8 +113,9 @@ class DmzjCrawler():
         return r
 
     def start(self):
-        while (self.page > 0 and self.page < 5):
+        while (self.page > 0 and self.page < 61):
            url = 'https://news.dmzj.com/meituxinshang/p{}.html'.format(self.page)
            print('\033[1;35m--------------------当前页数：', self.page, '\033[0m')
            self.getImagesViewLinks(url)
            time.sleep(self.sleepTime)
+        print('下载完成！')
