@@ -87,7 +87,7 @@ async function updateTopic() {
     let content = `<b style="color: #6c9e71">[更新主题]</b><br />
       <a href="${webParams.domain}/image/topicview?id=${topic.insertId}">${title}</a>(${topic.insertId})
       <br /><b style="color: #6c9e71">[图片数量]</b><br />${imageCount}`
-    sendEmail(subject, content, recipients)
+    await sendEmail(subject, content, recipients)
     fs.rmdir(filesPath, err => {})
     await logger.info(`专题美图更新完成：${title}(${topic.insertId})`)
   })
@@ -156,7 +156,7 @@ async function putImage(topicID, name, timeStamp, saveName, imagePath) {
 async function sendEmail(subject, content, recipients) {
   // 发送邮件通知维护工作完成
   let email = new Email(recipients)
-  await email.send(subject, content)
+  return await email.send(subject, content)
 }
 
 /**

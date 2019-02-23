@@ -146,7 +146,7 @@ async function uploadFile(files, type) {
     // @TODO: 需改造成可同时写多个文件
     if (files.length > 0) {
         // @ TODO: 之后改为临时文件，上传到 OSS 以后删除
-        var exts = type === 'photo' ? ['.jpg', '.png', '.gif', '.jpeg'] : ['.mp3', '.wav', '.MP3']
+        var exts = type === 'photo' ? ['.jpg', '.png', '.gif', '.jpeg'] : ['.mp3', '.wav', '.MP3', '.flac']
         var extname = path.extname(files[0].originalname);
         if (!mutils.inArray(extname, exts)) {
             return false

@@ -16,7 +16,7 @@ var actions = {
         let email = new Email('353740902@qq.com');
         let res =  await email.send('node-web 有新的提交需要更新', '有新的提交需要更新');
         var log = new Log(this.params)
-        log.info('有新的提交已被拉取，邮件已发送')
+        log.info('有新的提交已被合并到 github，邮件已发送')
         return '日志已生成'
     },
     pullrequest: async function () {
