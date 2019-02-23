@@ -24,6 +24,7 @@
     "gulp-uglify": "^3.0.0"
   },
   "dependencies": {
+    "ali-oss": "^6.1.0",
     "async": "^2.6.1",
     "body-parser": "^1.18.3",
     "eslint": "^4.19.1",

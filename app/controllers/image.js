@@ -1,6 +1,7 @@
 const Topic = require('../models/Topic.js')
 const Image = require('../models/Image.js')
 const Maimeng = require('../../lib/Maimeng')
+const webParams = require('../webParams')
 const R = require('ramda')
 
 var Fish = {}
@@ -46,7 +47,7 @@ var actions = {
       .order('id DESC')
       .all()
     R.map((topic) => {
-      topic.cover = '/image/topic/' + topic.cover
+      topic.cover = webParams.topicImagePath + topic.cover
     }, topics)
     return topics
   },
@@ -67,7 +68,7 @@ var actions = {
       .order('id ASC')
       .all()
     R.map((image) => {
-      image.url = '/image/topic/' + image.url
+      image.url = webParams.topicImagePath + image.url
     }, images)
     return images
   },
