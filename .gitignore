@@ -3,4 +3,5 @@ node_modules/*
 app/config.js
 public/tem/*
 app/runtime/*
+app/config/*.bac
 public/image/topic/*
