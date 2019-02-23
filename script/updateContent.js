@@ -45,7 +45,7 @@ async function updateTopic() {
     logger.info("need't add topic")
     return
   }
-  logger.info('准备新增美图专题')
+  logger.info(`准备新增美图专题：${title}`)
   // 若记录值不同，替换为最新图片页面地址并下载
   await nedb.updateASync({ doc_type: nedb.docTypes.PIXIV}, { $set: { page_url: pageUrl } })
   let filesPath = await getPixivFile()
