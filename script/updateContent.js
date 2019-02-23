@@ -24,73 +24,74 @@ let recipients = ['353740902@qq.com']
  *
  */
 async function updateTopic() {
-    let cmdPath = path.join(BASE_PATH, 'script/python/pixiv/newPixiv.py')
-    let cmd = `${PYTHON} ${cmdPath} ${pixivPath}`;
-    let stdoutInfo = await execAsync(cmd)
-    let stdout = stdoutInfo.stdout.replace(/[\r\n]/g, '')
-    if (stdout === 'None') {
-      logger.warn('获取 PIXIV 图片页地址出错');
+  let cmdPath = path.join(BASE_PATH, 'script/python/pixiv/newPixiv.py')
+  let cmd = `${PYTHON} ${cmdPath} ${pixivPath}`;
+  let stdoutInfo = await execAsync(cmd)
+  let stdout = stdoutInfo.stdout.replace(/[\r\n]/g, '')
+  if (stdout === 'None') {
+    logger.warn('获取 PIXIV 图片页地址出错');
+    return
+  }
+  let pixivInfo = JSON.parse(stdout)
+  let pageUrl = pixivInfo.url
+  let titleBase64 = pixivInfo.title
+  let title = base64_decode(titleBase64)
+  // 查询最新的图片页面记录
+  let pixiv = await nedb.findOneASync({ doc_type: nedb.docTypes.PIXIV })
+  if (!pixiv) {
+    // 若不存在，创建新记录
+    await nedb.insertASync({ doc_type: nedb.docTypes.PIXIV, page_url: pageUrl, isSend: false })
+  } else if (pixiv.page_url === pageUrl && pixiv.isSend) {
+    logger.info("need't add topic")
+    return
+  }
+  logger.info('准备新增美图专题')
+  // 若记录值不同，替换为最新图片页面地址并下载
+  await nedb.updateASync({ doc_type: nedb.docTypes.PIXIV}, { $set: { page_url: pageUrl } })
+  let filesPath = await getPixivFile()
+  if (!filesPath) {
+    logger.warn('美图专题图片文件夹地址出错')
+    return
+  }
+  let topic = null
+  let imageCount = 0
+  // 存入数据库并将图片上传至 OSS
+  // TODO: 优化回调为 Promise
+  fs.readdir(filesPath, async function (err, files) {
+    if (err) {
+      logger.error(err)
       return
     }
-    let pixivInfo = JSON.parse(stdout)
-    let pageUrl = pixivInfo.url
-    let titleBase64 = pixivInfo.title
-    let title = base64_decode(titleBase64)
-    // 查询最新的图片页面记录
-    let pixiv = await nedb.findOneASync({ doc_type: nedb.docTypes.PIXIV })
-    if (!pixiv) {
-      // 若不存在，创建新记录
-      await nedb.insertASync({ doc_type: nedb.docTypes.PIXIV, page_url: pageUrl, isSend: false })
-    } else if (pixiv.page_url === pageUrl && pixiv.isSend) {
-      logger.info("need't add topic")
-      return
-    }
-    logger.info('准备新增美图专题')
-    // 若记录值不同，替换为最新图片页面地址并下载
-    await nedb.updateASync({ doc_type: nedb.docTypes.PIXIV}, { $set: { page_url: pageUrl } })
-    let filesPath = await getPixivFile()
-    if (!filesPath) {
-      logger.warn('美图专题图片文件夹地址出错')
-      return
-    }
-    let topic = null
-    let imageCount = 0
-    // 存入数据库并将图片上传至 OSS
-    // TODO: 优化回调为 Promise
-    fs.readdir(filesPath, async function (err, files) {
-      if (err) {
-        logger.error(err)
-        return
-      }
-      //遍历读取到的文件列表
-      let timeStamp = Date.parse(new Date()) / 1000
-      for (let imageName of files) {
-        let saveName = date(Date.parse(new Date()) / 1000, 'yyyyMMdd') + '/' + imageName
-        let imagePath = path.join(filesPath, imageName)
+    //遍历读取到的文件列表
+    let timeStamp = Date.parse(new Date()) / 1000
+    for (let imageName of files) {
+      let saveName = date(Date.parse(new Date()) / 1000, 'yyyyMMdd') + '/' + imageName
+      let imagePath = path.join(filesPath, imageName)
+      if (!topic) {
+        // 创建专题
+        topic = await createTopic(title, saveName, timeStamp)
         if (!topic) {
-          // 创建专题
-          topic = await createTopic(title, saveName, timeStamp)
-          if (!topic) {
-            continue
-          }
+          continue
         }
-        await putImage(topic.insertId, title, timeStamp, saveName, imagePath)
-        // 删除文件
-        fs.unlink(imagePath, err => {})
-        imageCount += 1
       }
-      // 发送邮件通知维护工作完成
-      // 修改为已发送状态
-      await nedb.updateASync({ doc_type: nedb.docTypes.PIXIV}, { $set: { isSend: true } })
-      let subject = '美图更新'
-      let href = `<a href="${webParams.domain}/image/topicview?id=${topic.insertId}">${title}(${topic.insertId})</a>`
-      let content = `<b style="color: #6c9e71">[更新主题]</b><br />
-        <a href="${webParams.domain}/image/topicview?id=${topic.insertId}">${title}</a>(${topic.insertId})
-        <br /><b style="color: #6c9e71">[图片数量]</b><br />${imageCount}`
-      sendEmail(subject, content, recipients)
-      fs.rmdir(filesPath, err => {})
-      await logger.info(`专题美图更新完成：${title}(${topic.insertId})`)
-    })
+      await putImage(topic.insertId, title, timeStamp, saveName, imagePath)
+      // 删除文件
+      fs.unlink(imagePath, err => {})
+      imageCount += 1
+    }
+    // 发送邮件通知维护工作完成
+    // 修改为已发送状态
+    await nedb.updateASync({ doc_type: nedb.docTypes.PIXIV}, { $set: { isSend: true } })
+    let subject = '美图更新'
+    let href = `<a href="${webParams.domain}/image/topicview?id=${topic.insertId}">${title}(${topic.insertId})</a>`
+    let content = `<b style="color: #6c9e71">[更新主题]</b><br />
+      <a href="${webParams.domain}/image/topicview?id=${topic.insertId}">${title}</a>(${topic.insertId})
+      <br /><b style="color: #6c9e71">[图片数量]</b><br />${imageCount}`
+    sendEmail(subject, content, recipients)
+    fs.rmdir(filesPath, err => {})
+    await logger.info(`专题美图更新完成：${title}(${topic.insertId})`)
+  })
+  return
 }
 
 /**
@@ -131,7 +132,6 @@ async function putImage(topicID, name, timeStamp, saveName, imagePath) {
     }
     var image = Image.model
     image.attrs = {
-      p_id: null,
       url: saveName,
       topic_id: topicID,
       name: name,
@@ -178,8 +178,6 @@ async function getPixivFile() {
 }
 try {
   updateTopic()
-  return
 } catch(e) {
   logger.error(`美图投稿邮件错误，错误原因：${e.stack || e}`)
 }
-

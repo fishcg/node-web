@@ -21,5 +21,6 @@ async function put() {
       console.log(`上传失败：${image.id}`)
     }
   }
+  console.log('上传完成！')
 }
 put()
