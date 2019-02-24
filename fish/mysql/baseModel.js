@@ -81,6 +81,19 @@ class Model {
     async save() {
         return await this.saveData()
     }
+
+    async updateByPk(id, updateAttr) {
+        var table = this.getTable()
+        var db = this.getDb()
+        let updateArr = []
+        for (let key in updateAttr) {
+            updateArr.push(`${key} = ${updateAttr[key]}`)
+        }
+        let update = updateArr.join(', ')
+        let sql = `UPDATE ${db}.${table} SET ${update} WHERE id = ${id}`
+        return await this.queryDB(sql)
+    }
+
     async saveAsync(db) {
         var data = await this.saveData()
         db(data)
@@ -124,7 +137,7 @@ class Model {
         var data = await this.queryDB(sql, this.queryObj.params)
         return data
     }
-    async queryDB(sql, params) {
+    async queryDB(sql, params = []) {
         var that = this
 
         return new Promise((resolve, reject) => {
