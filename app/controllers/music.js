@@ -1,7 +1,8 @@
-var path = require('path')
-var fs = require('fs')
-var md5 = require('md5')
-
+const path = require('path')
+const fs = require('fs')
+const md5 = require('md5')
+const R = require('ramda')
+const webParams = require('../webParams')
 
 var config = require(path.join(__dirname, '../config.js'))
 var Music = require(path.join(config.path.app, 'models/Music.js'))
@@ -12,67 +13,67 @@ var date = mutils.date
 var Fish = {}
 
 var actions = {
-    params: {},
-    index: async() => {
-// 查询推荐音数据
-var recommendSounds = await Music.model.find()
-    .select('id, subject, author, views, photo')
-    .where('top = ?', [1])
-    .limit(4)
-    .all()
-var newSounds = await Music.model.find()
-    .select('id, subject, photo')
-    .limit(5)
-    .order('created DESC')
-    .all()
-var vocaloidSounds = await Music.model.find()
-    .select('id, subject, photo')
-    .limit(10)
-    .order('RAND()')
-    .all()
-var hotSounds = await Music.model.find()
-    .select('id, subject, photo')
-    .where('hot = ?', [1])
-    .limit(10)
-    .order('created DESC')
-    .all()
-var otherSounds = await Music.model.find()
-    .select('id, subject, photo')
-    .limit(10)
-    .order('RAND()')
-    .all()
-var data = {
-    data: {
+  params: {},
+  index: async() => {
+    // 查询推荐音数据
+    let recommendSounds = await Music.model.find()
+      .select('id, subject, author, views, photo')
+      .where('top = ?', [1])
+      .limit(4)
+      .all()
+    let newSounds = await Music.model.find()
+      .select('id, subject, photo')
+      .limit(5)
+      .order('created DESC')
+      .all()
+    let vocaloidSounds = await Music.model.find()
+      .select('id, subject, photo')
+      .limit(10)
+      .order('RAND()')
+      .all()
+    let hotSounds = await Music.model.find()
+      .select('id, subject, photo')
+      .where('hot = ?', [1])
+      .limit(10)
+      .order('created DESC')
+      .all()
+    let otherSounds = await Music.model.find()
+      .select('id, subject, photo')
+      .limit(10)
+      .order('RAND()')
+      .all()
+    return {
+      data: {
         recommendSounds: recommendSounds,
         newSounds: newSounds,
         vocaloidSounds: vocaloidSounds,
         hotSounds: hotSounds,
         otherSounds: otherSounds,
+      },
     }
-}
-return data
-},
-play: async function () {
-    var id = this.params.request.get.id ? this.params.request.get.id : 1
-    var sound = await
-    Music.model.find()
+  },
+
+  // 播放页
+  play: async function () {
+    let id = this.params.request.get.id ? this.params.request.get.id : 1
+    let sound = await
+      Music.model.find()
         .select('id, subject, author, views, photo, url, created, replies')
         .where('id = ?', [id])
         .one()
     sound.created = date(sound.created, 'y-MM-dd HH:mm:ss')
-    var data = {
-        fishData: {
-            sound: sound
-        }
+    if (sound.url.substr(0, 5) === 'sound') {
+      sound.url = webParams.staticPath + '/' + sound.url
     }
-    // console.log(data)
-    return data
-}
-,
-create: async function () {
+    return{
+      fishData: {
+        sound: sound,
+      },
+    }
+  },
+  create: async function () {
     return {}
-}
-,
+  },
 upload: async function () {
     var files = this.params.request.files
     if (files.length > 0) {
