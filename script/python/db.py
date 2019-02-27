@@ -6,13 +6,13 @@ import pymysql
 class Mysql(): 
     def __init__(self):
         # 打开数据库连接
-        print('DB 开启连接')
+        # print('DB 开启连接')
         self.db = pymysql.connect(mysql['host'], mysql['user'], mysql['password'], mysql['database'])
         # 使用 cursor() 方法创建一个游标对象 cursor
         self.cursor = self.db.cursor()
 
     def __del__( self ):
-        print('DB 连接关闭')
+        # print('DB 连接关闭')
         # 关闭数据库连接
         self.db.close()
     
@@ -26,9 +26,9 @@ class Mysql():
            self.db.commit()
            return self.cursor.rowcount
         except Exception as e:
-           print('SQL 执行异常', e)
            # 如果发生错误则回滚
            self.db.rollback()
+           raise Exception(e)
 
     # WORKAROUND: 临时使用
     def create(self, sql, *params):
@@ -41,9 +41,11 @@ class Mysql():
            # 提交到数据库执行
            self.db.commit()
            return id
-        except:
+        except Exception as e:
+           # print('SQL 执行异常', e)
            # 如果发生错误则回滚
            self.db.rollback()
+           raise Exception(e)
 
     def findOne(self, sql, *params):
         self.execute(sql, params)

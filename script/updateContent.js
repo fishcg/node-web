@@ -7,10 +7,12 @@ const { promisify } = require('util')
 const nedb = require('../lib/NedbConnection')
 const logger = require('../lib/Logger')
 const Email = require('../lib/Email')
+const Dmzj = require('../lib/Dmzj')
 const { base64_decode, date } = require('../lib/Utils')
 const { TEMP_PATH, PYTHON, BASE_PATH } = require('../config/system')
-const Topic = require('../app/models/Topic.js')
-const Image = require('../app/models/Image.js')
+const Topic = require('../app/models/Topic')
+const Image = require('../app/models/Image')
+const News = require('../app/models/News')
 const oss = require('../component/OSS')
 const webParams = require('../app/webParams')
 
@@ -19,8 +21,58 @@ const pixivPath = path.join(TEMP_PATH, 'pixiv')
 
 // 邮件通知收件人
 let recipients = ['353740902@qq.com']
+
+try {
+  // updateTopic()
+  updateNews()
+} catch(e) {
+  logger.error(`美图投稿邮件错误，错误原因：${e.stack || e}`)
+}
+
+
+
 /**
- * 发送 PIXIV 图片到指定邮箱
+ * 更新新闻
+ *
+ * @return {Promise.<void>}
+ */
+async function updateNews() {
+  let oldnews = await nedb.findOneASync({ doc_type: nedb.docTypes.NEWS })
+  let pageUrl = 'first'
+  if (!oldnews) {
+    // 若不存在，创建新记录
+    await nedb.insertASync({ doc_type: nedb.docTypes.NEWS, page_url: pageUrl })
+  } else {
+    pageUrl = oldnews.page_url
+  }
+  let cmdPath = path.join(BASE_PATH, 'script/python/createNews.py')
+  let cmd = `${PYTHON} ${cmdPath} ${pageUrl}`
+  let stdoutInfo = await execAsync(cmd)
+  let stdout = stdoutInfo.stdout.replace(/[\r\n]/g, '')
+  if (stdout === '-1') {
+    logger.warn(`创建新闻出错：${pageUrl}`)
+    return false
+  }
+  if (stdout === '-2') {
+    logger.info("need't add news")
+    return false
+  }
+  let newsInfo = JSON.parse(stdout)
+  if (newsInfo.url === pageUrl) {
+    return false
+  }
+  // 上传新闻中的图片到 OSS
+  let news = await News.model.find().select('id, cover, content').where('id = ?', [newsInfo.id]).one()
+  let cover = await Dmzj.getImage(news.cover)
+  let saveData = await News.model.updateByPk(news.id, { cover: `'${cover}'` })
+
+  // 若记录值不同，替换为最新新闻页面地址
+  await nedb.updateASync({ doc_type: nedb.docTypes.NEWS}, { $set: { page_url: newsInfo.url } })
+  return true
+}
+
+/**
+ * 更新美图
  *
  */
 async function updateTopic() {
@@ -91,7 +143,7 @@ async function updateTopic() {
     fs.rmdir(filesPath, err => {})
     await logger.info(`专题美图更新完成：${title}(${topic.insertId})`)
   })
-  return
+  return true
 }
 
 /**
@@ -175,9 +227,4 @@ async function getPixivFile() {
         return null
     }
     return stdout
-}
-try {
-  updateTopic()
-} catch(e) {
-  logger.error(`美图投稿邮件错误，错误原因：${e.stack || e}`)
 }
