@@ -42,14 +42,15 @@ var actions = {
       .limit(10)
       .order('RAND()')
       .all()
+    let data = JSON.stringify({
+      recommendSounds: recommendSounds,
+      newSounds: newSounds,
+      vocaloidSounds: vocaloidSounds,
+      hotSounds: hotSounds,
+      otherSounds: otherSounds,
+    })
     return {
-      data: {
-        recommendSounds: recommendSounds,
-        newSounds: newSounds,
-        vocaloidSounds: vocaloidSounds,
-        hotSounds: hotSounds,
-        otherSounds: otherSounds,
-      },
+      data: data,
     }
   },
 
@@ -66,9 +67,7 @@ var actions = {
       sound.url = webParams.staticPath + '/' + sound.url
     }
     return{
-      fishData: {
-        sound: sound,
-      },
+      fishData: JSON.stringify({ sound: sound }),
     }
   },
   create: async function () {

@@ -13,42 +13,11 @@
     <script src="/js/vue.js"></script>
 </head>
 <style>
-    .news-list {
-        margin-top: 30px;
-        padding: 5px 15px;
-        border-top: #000 solid 1px;
-        border-bottom: #000 solid 2px;
-        border-radius: 5px;
-        box-shadow: 0 0 5px #666;
-        background-color: #fff;
+    #title {
+        margin-top: 60px;
+        text-align: center;
+        color: #a0707d;
     }
-    .news-title {
-        color: #000;
-        font-size: 20px;
-        font-weight: bolder;
-    }
-    .news-info {
-        margin-top: 5px;
-        font-size: 12px;
-    }
-    .news-intro {
-        height: 105px;
-        margin-top: 5px;
-        overflow: hidden;
-        font-size: 13px;
-        line-height: 21px;
-        letter-spacing: 1px;
-    }
-    .news-intro-text {
-        width: 840px;
-        float: left;
-    }
-    .news-cover img {
-        margin-left: 20px;
-        width: 200px;
-        height: 100px;
-    }
-
 </style>
 <body>
 <!-- 页头 -->
@@ -90,20 +59,8 @@
 </div>
 <!-- 主体内容 -->
 <div id="vue-content" class="content">
-    <div>
-        <ul>
-            <li class="news-list" v-for="news in newsArr">
-                <a :href="'/news/view?id=' + news.id" target="_blank" class="news-title">{{ news.title }}</a>
-                <div class="news-info">发布：{{news.author}} 时间：<em>2018-07-07 16:28:16</em> 阅读：90 回复：1</div>
-                <div class="news-intro">
-                    <div class="news-intro-text" v-html="news.intro"></div>
-                    <a :href="'/news/view?id=' + news.id" target="_blank" class="news-cover">
-                        <img alt="kobe" :src="news.cover">
-                    </a>
-                </div>
-            </li>
-        </ul>
-    </div>
+    <div id="title"><h1>{=title=}</h1></div>
+    {=content=}
 </div>
 <!-- 页脚 -->
 <div id="footer">
@@ -117,15 +74,5 @@
         </div>
     </div>
 </div>
-<script>
-    // 控制器返回的数据对象
-    var news = Fish.getDate('{=news=}')
-    var vm = new Vue({
-        el: '#vue-content',
-        data: {
-            newsArr: news
-        }
-    })
-</script>
 </body>
 </html>

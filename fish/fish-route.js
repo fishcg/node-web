@@ -154,8 +154,10 @@ async function replaceDatas(data, str){
     // $matchs = str.match(/{{.*?}}/g)
     var i = 0
     var length = Object.getOwnPropertyNames(data).length
-    for (var attr in data) {
-        str = str.replace(eval('/{=' + attr + '=}/g'), JSON.stringify(data[attr]))
+    var reg = /^[\"]+|[\"]+$/g
+    for (let attr in data) {
+        let value = data[attr]
+        str = str.replace(`{=${attr}=}`, value)
     }
     return str
 }

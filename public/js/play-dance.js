@@ -105,16 +105,6 @@ var play = function (option) {
     };
 
     function init(music_url) {
-
-        /*canvas = document.createElement( 'canvas' );
-        canvas.addEventListener( 'mousedown', mouseDownHandler, false );
-        canvas.addEventListener( 'mouseup', mouseUpHandler, false );
-        canvas.addEventListener( 'mousemove', mouseMoveHandler, false );
-        canvas.addEventListener( 'mouseenter', mouseEnterHandler, false );
-        canvas.addEventListener( 'mouseleave', mouseLeaveHandler, false );
-        console.log(canvas)
-        document.body.appendChild( canvas );*/
-
         var parentBox = typeof option.box !== 'undefined' ? document.getElementById(option.box) : document.body
         canvas = document.createElement( 'canvas' );
         canvas.addEventListener( 'mousedown', mouseDownHandler, false );
@@ -123,21 +113,6 @@ var play = function (option) {
         canvas.addEventListener( 'mouseenter', mouseEnterHandler, false );
         canvas.addEventListener( 'mouseleave', mouseLeaveHandler, false );
         parentBox.appendChild( canvas );
-
-
-
-        /*var parentBox = /!*typeof option.box !== 'undefined' ? document.getElementById(option.box) :*!/ document.body
-        var canvas = document.createElement( 'canvas' );
-        // div.setAttribute("id", "newDiv");
-        /!*canvas = document.getElementById('play-dance')*!/
-        canvas.addEventListener( 'mousedown', mouseDownHandler, false );
-        canvas.addEventListener( 'mouseup', mouseUpHandler, false );
-        canvas.addEventListener( 'mousemove', mouseMoveHandler, false );
-        canvas.addEventListener( 'mouseenter', mouseEnterHandler, false );
-        canvas.addEventListener( 'mouseleave', mouseLeaveHandler, false );
-        console.log(parentBox)
-        parentBox.appendChild( canvas );*/
-
         context = canvas.getContext( '2d' );
 
         window.addEventListener( 'resize', onResize, false );
@@ -154,18 +129,6 @@ var play = function (option) {
         context.putImageData( imageData, 0, 0 );
         audioSetup(music_url);
         animate();
-        btStart = document.getElementById( 'btStartAudioVisualization' );
-        btStart.addEventListener( 'mousedown', userStart, false );
-
-        btLoadAudio = document.getElementById( 'btLoadAudio' );
-        // btLoadAudio.addEventListener( 'change', loadAudioFileHandler, false );
-
-        labelLoadAudio = document.getElementById( 'labelLoadAudio' );
-        // labelLoadAudio.style.display = 'none';
-
-        txtStatus = document.getElementById( 'txtStatus' );
-        // txtStatus.innerHTML = 'Waiting Patiently For You... Please Click the Start Button.';
-
     };
 
 //---
@@ -189,12 +152,9 @@ var play = function (option) {
 
     function audioSetup( url ) {
 
-        if ( audio ) {
-
+        if (audio) {
             audio.pause();
-
         }
-
         audio = new Audio();
         audio.src = url;
         audio.controls = false;
@@ -202,7 +162,6 @@ var play = function (option) {
         audio.autoplay = true;
         audio.crossOrigin = 'anonymous';
         audio.addEventListener( 'canplaythrough', audioLoaded, false );
-
         audioContext = new ( window.AudioContext || window.webkitAudioContext )();
 
         analyser = audioContext.createAnalyser();

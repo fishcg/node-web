@@ -251,7 +251,7 @@
             <div class="clearfix">
                 <ul class="clearfix">
                     <li class="module-elem" v-for="newSound in newSounds">
-                        <a :href="'/music/play?id=' + newSound.id" target="_blank">
+                        <a :href="'/music/play?id=' + newSound.id" target="_player">
                             <div class="module-elem-cover">
                                 <img :alt="newSound.subject" :src="newSound.photo"
                                      onerror="this.src='/dev/music/elem4.webp'">
