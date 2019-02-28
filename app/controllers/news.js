@@ -4,6 +4,7 @@ const config = require(path.join(__dirname, '../config'))
 const News = require(path.join(config.path.app, 'models/News'))
 const Throw = require(path.join(config.path.fish, 'throw'))
 const webParams = require('../webParams')
+const { date } = require('../../lib/Utils')
 
 var Fish = {}
 
@@ -12,9 +13,10 @@ var actions = {
   index: async function () {
     let id = this.params.request.get.id
     // 查询数据
-    let newss = await News.model.select('id, title, cover, intro, author').order('id DESC').limit(20).all()
+    let newss = await News.model.find().select('id, title, ctime, cover, intro, author').order('id DESC').limit(20).all()
     R.map((news) => {
       news.cover = webParams.staticPath + '/' + news.cover
+      news.citme = date(news.ctime, 'yyyy-MM-dd HH:mm:ss')
     }, newss)
     return {news: JSON.stringify(newss)}
   },
@@ -23,7 +25,7 @@ var actions = {
     if (!id) {
       return false
     }
-    let news = await News.model.select('id, title, cover, content').where('id = ?', [id]).one()
+    let news = await News.model.find().select('id, title, cover, content').where('id = ?', [id]).one()
     return {
       id: news.id,
       title: news.title,

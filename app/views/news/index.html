@@ -94,7 +94,7 @@
         <ul>
             <li class="news-list" v-for="news in newsArr">
                 <a :href="'/news/view?id=' + news.id" target="_blank" class="news-title">{{ news.title }}</a>
-                <div class="news-info">发布：{{news.author}} 时间：<em>2018-07-07 16:28:16</em> 阅读：90 回复：1</div>
+                <div class="news-info">发布：{{news.author}} 时间：<em>{{news.citme}}q</em> 阅读：90 回复：1</div>
                 <div class="news-intro">
                     <div class="news-intro-text" v-html="news.intro"></div>
                     <a :href="'/news/view?id=' + news.id" target="_blank" class="news-cover">
