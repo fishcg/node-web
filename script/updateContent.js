@@ -8,7 +8,7 @@ const nedb = require('../lib/NedbConnection')
 const logger = require('../lib/Logger')
 const Email = require('../lib/Email')
 const Dmzj = require('../lib/Dmzj')
-const { base64_decode, date } = require('../lib/Utils')
+const { base64_decode, date, timingTask } = require('../lib/Utils')
 const { TEMP_PATH, PYTHON, BASE_PATH } = require('../config/system')
 const Topic = require('../app/models/Topic')
 const Image = require('../app/models/Image')
@@ -22,14 +22,10 @@ const pixivPath = path.join(TEMP_PATH, 'pixiv')
 // 邮件通知收件人
 let recipients = ['353740902@qq.com']
 
-try {
-  // updateTopic()
-  updateNews()
-} catch(e) {
-  logger.error(`美图投稿邮件错误，错误原因：${e.stack || e}`)
-}
-
-
+// 每 4 时更新一次专题美图
+timingTask(updateTopic, 14400)
+// 每小时更新一次新闻
+timingTask(updateNews, 3600)
 
 /**
  * 更新新闻
@@ -37,113 +33,139 @@ try {
  * @return {Promise.<void>}
  */
 async function updateNews() {
-  let oldnews = await nedb.findOneASync({ doc_type: nedb.docTypes.NEWS })
-  let pageUrl = 'first'
-  if (!oldnews) {
-    // 若不存在，创建新记录
-    await nedb.insertASync({ doc_type: nedb.docTypes.NEWS, page_url: pageUrl })
-  } else {
-    pageUrl = oldnews.page_url
+  try{
+    let oldnews = await nedb.findOneASync({ doc_type: nedb.docTypes.NEWS })
+    let pageUrl = 'first'
+    if (!oldnews) {
+      // 若不存在，创建新记录
+      await nedb.insertASync({ doc_type: nedb.docTypes.NEWS, page_url: pageUrl })
+    } else {
+      pageUrl = oldnews.page_url
+    }
+    let cmdPath = path.join(BASE_PATH, 'script/python/createNews.py')
+    let cmd = `${PYTHON} ${cmdPath} ${pageUrl}`
+    let stdoutInfo = await execAsync(cmd)
+    let stdout = stdoutInfo.stdout.replace(/[\r\n]/g, '')
+    if (stdout === '-1') {
+      logger.warn(`创建新闻出错：${pageUrl}`)
+      return false
+    }
+    if (stdout === '-2') {
+      logger.info("need't add news")
+      return false
+    }
+    let newsInfo = JSON.parse(stdout)
+    if (newsInfo.url === pageUrl) {
+      logger.info("need't add news")
+      return false
+    }
+    // 上传新闻中的图片到 OSS
+    let news = await News.model.find().select('id, title, cover, content').where('id = ?', [newsInfo.id]).one()
+    let cover = await Dmzj.getImage(news.cover)
+    let regImg = /<img .+?\/>/g
+    let content = news.content
+    let images = content.match(regImg)
+    if (images) {
+      let regSrc = /http.+?.jpg/g
+      for (let image of images) {
+        let srcs = image.match(regSrc)
+        if (!srcs) {
+          continue
+        }
+        let ossPath = await Dmzj.getImage(srcs[0])
+        let ossImage = webParams.staticPath + '/' + ossPath
+        content = content.replace(srcs[0], ossImage)
+      }
+    }
+    content = content.replace(/\'/g, "''")
+    await nedb.updateASync({ doc_type: nedb.docTypes.NEWS}, { $set: { page_url: newsInfo.url } })
+    await News.model.updateByPk(news.id, { cover: `'${cover}'`, content: `'${content}'`, status: 1 })
+    // TODO 修改失败以后做相应处理
+    // 若记录值不同，替换为最新新闻页面地址
+    await logger.info(`新闻更新完成：${news.title}(${news.id})`)
+    await sendEmail('Acgay 新闻已更新', `更新新闻：${news.title}(${news.id})`, recipients)
+    return true
+  } catch (e) {
+    logger.error(`更新新闻失败：${e}`)
   }
-  let cmdPath = path.join(BASE_PATH, 'script/python/createNews.py')
-  let cmd = `${PYTHON} ${cmdPath} ${pageUrl}`
-  let stdoutInfo = await execAsync(cmd)
-  let stdout = stdoutInfo.stdout.replace(/[\r\n]/g, '')
-  if (stdout === '-1') {
-    logger.warn(`创建新闻出错：${pageUrl}`)
-    return false
-  }
-  if (stdout === '-2') {
-    logger.info("need't add news")
-    return false
-  }
-  let newsInfo = JSON.parse(stdout)
-  if (newsInfo.url === pageUrl) {
-    return false
-  }
-  // 上传新闻中的图片到 OSS
-  let news = await News.model.find().select('id, cover, content').where('id = ?', [newsInfo.id]).one()
-  let cover = await Dmzj.getImage(news.cover)
-  let saveData = await News.model.updateByPk(news.id, { cover: `'${cover}'` })
-
-  // 若记录值不同，替换为最新新闻页面地址
-  await nedb.updateASync({ doc_type: nedb.docTypes.NEWS}, { $set: { page_url: newsInfo.url } })
-  return true
 }
 
 /**
  * 更新美图
- *
  */
 async function updateTopic() {
-  let cmdPath = path.join(BASE_PATH, 'script/python/pixiv/newPixiv.py')
-  let cmd = `${PYTHON} ${cmdPath} ${pixivPath}`;
-  let stdoutInfo = await execAsync(cmd)
-  let stdout = stdoutInfo.stdout.replace(/[\r\n]/g, '')
-  if (stdout === 'None') {
-    logger.warn('获取 PIXIV 图片页地址出错');
-    return
-  }
-  let pixivInfo = JSON.parse(stdout)
-  let pageUrl = pixivInfo.url
-  let titleBase64 = pixivInfo.title
-  let title = base64_decode(titleBase64)
-  // 查询最新的图片页面记录
-  let pixiv = await nedb.findOneASync({ doc_type: nedb.docTypes.PIXIV })
-  if (!pixiv) {
-    // 若不存在，创建新记录
-    await nedb.insertASync({ doc_type: nedb.docTypes.PIXIV, page_url: pageUrl, isSend: false })
-  } else if (pixiv.page_url === pageUrl && pixiv.isSend) {
-    logger.info("need't add topic")
-    return
-  }
-  logger.info(`准备新增美图专题：${title}`)
-  // 若记录值不同，替换为最新图片页面地址并下载
-  await nedb.updateASync({ doc_type: nedb.docTypes.PIXIV}, { $set: { page_url: pageUrl } })
-  let filesPath = await getPixivFile()
-  if (!filesPath) {
-    logger.warn('美图专题图片文件夹地址出错')
-    return
-  }
-  let topic = null
-  let imageCount = 0
-  // 存入数据库并将图片上传至 OSS
-  // TODO: 优化回调为 Promise
-  fs.readdir(filesPath, async function (err, files) {
-    if (err) {
-      logger.error(err)
+  try {
+    let cmdPath = path.join(BASE_PATH, 'script/python/pixiv/newPixiv.py')
+    let cmd = `${PYTHON} ${cmdPath} ${pixivPath}`;
+    let stdoutInfo = await execAsync(cmd)
+    let stdout = stdoutInfo.stdout.replace(/[\r\n]/g, '')
+    if (stdout === 'None') {
+      logger.warn('获取 PIXIV 图片页地址出错');
       return
     }
-    //遍历读取到的文件列表
-    let timeStamp = Date.parse(new Date()) / 1000
-    for (let imageName of files) {
-      let saveName = date(Date.parse(new Date()) / 1000, 'yyyyMMdd') + '/' + imageName
-      let imagePath = path.join(filesPath, imageName)
-      if (!topic) {
-        // 创建专题
-        topic = await createTopic(title, saveName, timeStamp)
-        if (!topic) {
-          continue
-        }
-      }
-      await putImage(topic.insertId, title, timeStamp, saveName, imagePath)
-      // 删除文件
-      fs.unlink(imagePath, err => {})
-      imageCount += 1
+    let pixivInfo = JSON.parse(stdout)
+    let pageUrl = pixivInfo.url
+    let titleBase64 = pixivInfo.title
+    let title = base64_decode(titleBase64)
+    // 查询最新的图片页面记录
+    let pixiv = await nedb.findOneASync({ doc_type: nedb.docTypes.PIXIV })
+    if (!pixiv) {
+      // 若不存在，创建新记录
+      await nedb.insertASync({ doc_type: nedb.docTypes.PIXIV, page_url: pageUrl, isSend: false })
+    } else if (pixiv.page_url === pageUrl && pixiv.isSend) {
+      logger.info("need't add topic")
+      return
     }
-    // 发送邮件通知维护工作完成
-    // 修改为已发送状态
-    await nedb.updateASync({ doc_type: nedb.docTypes.PIXIV}, { $set: { isSend: true } })
-    let subject = '美图更新'
-    let href = `<a href="${webParams.domain}/image/topicview?id=${topic.insertId}">${title}(${topic.insertId})</a>`
-    let content = `<b style="color: #6c9e71">[更新主题]</b><br />
-      <a href="${webParams.domain}/image/topicview?id=${topic.insertId}">${title}</a>(${topic.insertId})
-      <br /><b style="color: #6c9e71">[图片数量]</b><br />${imageCount}`
-    await sendEmail(subject, content, recipients)
-    fs.rmdir(filesPath, err => {})
-    await logger.info(`专题美图更新完成：${title}(${topic.insertId})`)
-  })
-  return true
+    logger.info(`准备新增美图专题：${title}`)
+    // 若记录值不同，替换为最新图片页面地址并下载
+    await nedb.updateASync({ doc_type: nedb.docTypes.PIXIV}, { $set: { page_url: pageUrl } })
+    let filesPath = await getPixivFile()
+    if (!filesPath) {
+      logger.warn('美图专题图片文件夹地址出错')
+      return
+    }
+    let topic = null
+    let imageCount = 0
+    // 存入数据库并将图片上传至 OSS
+    // TODO: 优化回调为 Promise
+    fs.readdir(filesPath, async function (err, files) {
+      if (err) {
+        logger.error(err)
+        return
+      }
+      //遍历读取到的文件列表
+      let timeStamp = Date.parse(new Date()) / 1000
+      for (let imageName of files) {
+        let saveName = date(Date.parse(new Date()) / 1000, 'yyyyMMdd') + '/' + imageName
+        let imagePath = path.join(filesPath, imageName)
+        if (!topic) {
+          // 创建专题
+          topic = await createTopic(title, saveName, timeStamp)
+          if (!topic) {
+            continue
+          }
+        }
+        await putImage(topic.insertId, title, timeStamp, saveName, imagePath)
+        // 删除文件
+        fs.unlink(imagePath, err => {})
+        imageCount += 1
+      }
+      // 发送邮件通知维护工作完成
+      // 修改为已发送状态
+      await nedb.updateASync({ doc_type: nedb.docTypes.PIXIV}, { $set: { isSend: true } })
+      let subject = '美图更新'
+      let href = `<a href="${webParams.domain}/image/topicview?id=${topic.insertId}">${title}(${topic.insertId})</a>`
+      let content = `<b style="color: #6c9e71">[更新主题]</b><br />
+        <a href="${webParams.domain}/image/topicview?id=${topic.insertId}">${title}</a>(${topic.insertId})
+        <br /><b style="color: #6c9e71">[图片数量]</b><br />${imageCount}`
+      await sendEmail(subject, content, recipients)
+      fs.rmdir(filesPath, err => {})
+      await logger.info(`专题美图更新完成：${title}(${topic.insertId})`)
+    })
+    return true
+  } catch (e) {
+    logger.error(`更新专题美图失败：${e}`)
+  }
 }
 
 /**
@@ -219,12 +241,12 @@ async function sendEmail(subject, content, recipients) {
  * @returns {String} pixiv 图片压缩包地址
  */
 async function getPixivFile() {
-    let cmdPath = path.join(BASE_PATH, 'script/python/pixiv/getFile.py')
-    let cmd = `${PYTHON} ${cmdPath} ${pixivPath}`;
-    let stdoutInfo = await execAsync(cmd, { encoding: 'utf8' })
-    let stdout = stdoutInfo.stdout.replace(/[\r\n]/g, '')
-    if (stdout === 'None') {
-        return null
-    }
-    return stdout
+  let cmdPath = path.join(BASE_PATH, 'script/python/pixiv/getFile.py')
+  let cmd = `${PYTHON} ${cmdPath} ${pixivPath}`;
+  let stdoutInfo = await execAsync(cmd, { encoding: 'utf8' })
+  let stdout = stdoutInfo.stdout.replace(/[\r\n]/g, '')
+  if (stdout === 'None') {
+    return null
+  }
+  return stdout
 }

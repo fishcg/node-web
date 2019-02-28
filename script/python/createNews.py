@@ -50,9 +50,9 @@ class DmzjCrawler():
             if self.oldUrl == viewUrl:
                 return -2
             image = str(linkHtml.img['src'])
-            subject = str(linkHtml['title'])
+            subject = str(linkHtml['title']).replace("'", "''")
             introHtml = linkHtml.parent.parent
-            intro = introHtml.find('p', class_='com_about').get_text()
+            intro = introHtml.find('p', class_='com_about').get_text().replace("'", "''")
             catalogName = introHtml.find('span', class_='bq_ico').get_text()
             category_id = self.getCatalog(catalogName)
             content = self.getNewsView(viewUrl)
@@ -75,7 +75,7 @@ class DmzjCrawler():
             content = ''
             for pContent in contentHtml:
                 content += str(pContent)
-            return content
+            return content.replace("'", "''")
 
     # 获得分类 ID
     def getCatalog(self, var):

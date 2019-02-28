@@ -8,7 +8,7 @@ class News extends baseModel.model {
   }
   fields() {
     return['id', 'user_id', 'catalog_id', 'author', 'cover', 'title', 'intro', 'content',
-      'ctime', 'utime', 'cltimes']
+      'ctime', 'utime', 'cltimes', 'status']
   }
   attributeLabels() {
     return {
@@ -23,6 +23,7 @@ class News extends baseModel.model {
       ctime: '创建时间',
       utime: '修改时间',
       cltimes: '发布时间',
+      status: '状态',
     }
   }
 }
