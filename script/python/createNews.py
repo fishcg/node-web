@@ -54,6 +54,9 @@ class DmzjCrawler():
             introHtml = linkHtml.parent.parent
             intro = introHtml.find('p', class_='com_about').get_text().replace("'", "''")
             catalogName = introHtml.find('span', class_='bq_ico').get_text()
+            if catalogName == '美图':
+                # 美图类型不获取
+                return -2
             category_id = self.getCatalog(catalogName)
             content = self.getNewsView(viewUrl)
             now = int(time.time())
