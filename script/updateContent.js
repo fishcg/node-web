@@ -83,7 +83,8 @@ async function updateNews() {
     // TODO 修改失败以后做相应处理
     // 若记录值不同，替换为最新新闻页面地址
     await logger.info(`新闻更新完成：${news.title}(${news.id})`)
-    await sendEmail('Acgay 新闻已更新', `更新新闻：${news.title}(${news.id})`, recipients)
+    let htmlContent = `<a href="${webParams.domain}/news/view?id=${news.id}">${news.title}</a>(${news.id})</br>${content}`
+    await sendEmail('Acgay 新闻已更新', `${htmlContent}`, recipients)
     return true
   } catch (e) {
     logger.error(`更新新闻失败：${e}`)
