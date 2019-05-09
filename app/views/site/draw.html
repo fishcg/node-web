@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="keywords" content="二次元,动漫,宅，ACG,新闻,声优">
+    <meta itemprop="name" content="动漫新闻屋">
+    <title>求签</title>
+    <link href="/css/index.css" rel="stylesheet">
+    <script src="/js/fish.js"></script>
+    <script src="/js/axios.min.js"></script>
+    <script src="/js/vue.js"></script>
+</head>
+<style>
+    .option {
+        height: 22px;
+        width: 100px;
+        padding: 1px 3px;
+        border: #2e2e2e solid 1px;
+    }
+    .btn {
+        height: 30px;
+        width: 90px;
+        margin-top: 20px;
+        background: #78f38d;
+        font-weight: 600;
+        border-radius: 5px;
+        border: #2e2e2e solid 2px;
+    }
+</style>
+<body>
+<!-- 页头 -->
+<div class="header">
+    <div class="nav-menu">
+        <div class="blur-bg"></div>
+        <div class="nav-mask"></div>
+        <div class="fish-wrapper clearfix ">
+            <div class="nav-con fl">
+                <ul class="nav">
+                    <li report-id="playpage_main" class="nav-item home">
+                        <a href="/" title="主站" class="t"><i class="bili-icon"></i>主站</a>
+                    </li>
+                    <li report-id="playpage_huahua" class="nav-item hbili">
+                        <a href="/news/index" target="_blank" title="动漫资讯" class="t">动漫资讯</a>
+                    </li>
+                    <li report-id="playpage_music" class="nav-item mbili">
+                        <a href="/image/topic" target="_blank" title="来探索画中的世界吧~" class="t">美图精选</a>
+                    </li>
+                    <li report-id="playpage_download" class="nav-item mobile">
+                        <i class="b-icon b-icon-app"></i>
+                        <a id="header-mobile-app" href="#" title="下载APP" class="t">下载APP</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="banner_link" class="head-banner" scrollshow="true">
+        <div class="head-content">
+            <div class="search">
+                <form class="searchform">
+                    <input type="text" placeholder="精彩资讯，一搜掌握~" value="" class="search-keyword">
+                    <button type="submit" class="search-submit"></button>
+                </form>
+            </div>
+            <a href="#" class="head-logo">AcGay</a>
+        </div>
+    </div>
+</div>
+<!-- 主体内容 -->
+<div id="vue-content" class="content">
+    <h3>SSR 卡</h3>
+    数量：
+    <input id="ssr-num" class="option" type="number"  v-model="ssrNum" value="" />
+    重复获得荣耀点:
+    <input id="ssr-coupon" class="option" type="number" v-model="ssrCoupon" value="" />
+    <br />
+    <h3>SR 卡</h3>
+    数量：
+    <input id="sr-num" class="option" type="number" v-model="srNum" value="" />
+    重复获得荣耀点:
+    <input id="sr-coupon" class="option" type="number" v-model="srCoupon" value="" />
+    <br/>
+    <h3>R 卡</h3>
+    数量：
+    <input id="r-num" class="option" type="number" v-model="rNum" value="" />
+    重复获得荣耀点:
+    <input id="r-coupon" class="option" type="number" v-model="rCoupon" value="" />
+    <br />
+    <h3>N 卡</h3>
+    数量：
+    <input id="n-num" class="option" type="number" v-model="nNum" value="" />
+    重复获得荣耀点:
+    <input id="n-coupon" class="option" type="number" v-model="nCoupon" value="" />
+    <br />
+    <h3>抽卡赠送荣耀点</h3>
+    <input id="new-coupon" class="option" type="number" v-model="newCoupon" value="" />
+    <br />
+    <h3>求签次数</h3>
+    <input id="draw-times" class="option" type="number" v-model="drawTimes" value="" />
+    <br />
+    <input type="button" class="btn" id="sure" value="模拟求签" @click="submitForm($event)" />
+    <h3>模拟结果</h3>
+    总幸运点：{{ allCoupon }}
+    <br />
+    通过新卡获得幸运点（只含每次抽卡赠送点数）：{{ allNewCoupon }}
+    <br />
+    通过重复卡获得幸运点（包含每次抽卡赠送点数）：{{ allRepeatCoupon }}
+</div>
+<!-- 页脚 -->
+<div id="footer">
+    <div id="footerimg" class="pie"></div>
+    <div id="footerbar" class="pie">
+        <div id="footerinfo">
+            <div id="powered">
+                技术支持：鱼鱼鱼<br>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    Vue.prototype.$http = axios
+    let draw = new Vue({
+        el: '#vue-content',
+        data: {
+            ssrNum: 4,
+            ssrCoupon: '4',
+            srNum: 8,
+            srCoupon: '3',
+            rNum: 24,
+            rCoupon: '2',
+            nNum: 14,
+            nCoupon: '1',
+            newCoupon: 5,
+            drawTimes: 100,
+            allCoupon: '',
+            allNewCoupon: '',
+            allRepeatCoupon: '',
+        },
+        methods: {
+            submitForm(event) {
+                event.preventDefault()
+                let data = this.$data
+                let formData = new FormData()
+                for(let i in data) {
+                    if (data[i] < 0) {
+                        alert('参数错误')
+                        return
+                    }
+                    formData.append(i, parseInt(data[i]))
+                }
+                let config = {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+                this.$http.post('/site/drawCard', formData, config).then(function (res) {
+                    if (res.status === 200 && res.data.success) {
+                        let info = res.data.info
+                        draw.$data.allCoupon = info.allCoupon
+                        draw.$data.allNewCoupon = info.allNewCoupon
+                        draw.$data.allRepeatCoupon = info.allRepeatCoupon
+                    } else {
+                        alert('网络错误，请联系管理员')
+                    }
+                })
+            }
+        }
+    })
+</script>
+</body>
+</html>
+
