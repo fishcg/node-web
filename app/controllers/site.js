@@ -21,6 +21,9 @@ var actions = {
     drawCard: function () {
         let allNewCoupon = 0
         let allRepeatCoupon = 0
+        let newTimes = 0
+        let repeatTimes = 0
+        let getAllTimes = 0
         let data = this.params.request.post
         for (let i in data) {
             data[i] = parseInt(data[i])
@@ -41,14 +44,20 @@ var actions = {
             cards.push(card)
         }
         let repeatCardIds = []
+
         for (let i = 0; i < data.drawTimes; i++) {
             let index = Math.floor((Math.random() * cards.length))
             let card  = cards[index]
             if (repeatCardIds.indexOf(card.id) === -1) {
                 allNewCoupon += data.newCoupon
+                newTimes += 1
                 repeatCardIds.push(card.id)
             } else {
+                repeatTimes += 1
                 allRepeatCoupon += (data.newCoupon + card.repeateCoupon)
+            }
+            if (getAllTimes === 0 && repeatCardIds.length === length) {
+                getAllTimes = i + 1
             }
         }
         let allCoupon = allNewCoupon + allRepeatCoupon
@@ -56,6 +65,9 @@ var actions = {
             allCoupon: allCoupon,
             allNewCoupon: allNewCoupon,
             allRepeatCoupon: allRepeatCoupon,
+            newTimes: newTimes,
+            repeatTimes: repeatTimes,
+            getAllTimes: getAllTimes,
         }
     }
 }
