@@ -59,15 +59,18 @@ class DmzjCrawler():
             r = self.get(url)
             html = r.text
             soup = BeautifulSoup(html, 'html.parser')
-            p_images = soup.find_all('p', style='text-align:center')
+            p_images = soup.find_all('p', style='text-align: center;')
             if len(p_images) == 0:
                 return None
             # 新增专题
             now = int(time.time())
             date = '{}{}'.format(time.strftime('%Y%m%d', time.localtime(now)),  now)
             for p_image in p_images:
-                url = p_image.img['src']
-                p_name = p_image.img['alt']
+                img = p_image.find('img')
+                if not img:
+                  continue
+                url = img['src']
+                p_name = img['alt']
                 p_object = re.search( r'id=(\d*)\..*', p_name, re.I)
                 p_id = int(p_object.group(1)) if p_object else 0
                 # 获取文件后缀名
