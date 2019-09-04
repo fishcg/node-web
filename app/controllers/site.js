@@ -159,8 +159,8 @@ var actions = {
             needNewCard = true
             drawRepeatTimes = 0
             baodiTimes += 1
-            log += `保底次数 +1，当前保底次数${baodiTimes}</br>`
-            log += `当前重复卡数量 ${repeatCardIds.length}</br>`
+            log += `保底次数 +1，当前保底次数：${baodiTimes}</br>`
+            log += `当前重复卡数量：${repeatCardIds.length}</br>`
             log += `当前重复卡为: ${repeatCardIds.join(', ')}</br>`
             continueTimes += 1
             data.drawTimes += 1
@@ -174,7 +174,7 @@ var actions = {
         allRepeatCoupon += (data.newCoupon + card.repeateCoupon)
       }
       if (getAllTimes === 0 && repeatCardIds.length === length) {
-        log += `<b style="color: #6162cb">集齐啦</b></br>`
+        log += `<b style="color: #6162cb">------------------------集齐啦------------------------</b></br>`
         getAllTimes = i + 1 - continueTimes
       }
     }
