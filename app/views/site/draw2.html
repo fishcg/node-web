@@ -108,6 +108,9 @@
     <h3>抽卡次数</h3>
     <input id="draw-times" class="option" type="number" v-model="drawTimes" value="" />
     <br />
+    <h3>保底规则</h3>
+    连续<input id="draw-times" class="option" type="number" v-model="maxRepeatTimes" value="" />次获得重复卡时下一次获得 1 张新卡
+    <br />
     <input type="button" class="btn" id="sure" value="模拟抽卡" @click="submitForm($event)" />
     <h3>模拟结果</h3>
     总幸运点：{{ allCoupon }}
@@ -120,7 +123,12 @@
     <br />
     通过重复语音获得幸运点（包含每次抽卡赠送点数）：{{ allRepeatCoupon }}
     <br />
-    在第 {{ getAllTimes }} 次时所有语音卡集齐：
+    在第 {{ getAllTimes }} 次时所有语音卡集齐
+    <br />
+    共触发 {{ baodiTimes }} 次保底策略
+    <br /><br /><br /><br />
+    <h3>抽卡日志</h3>
+    <span v-html="loginfo"></span>
 </div>
 <!-- 页脚 -->
 <div id="footer">
@@ -138,6 +146,7 @@ Vue.prototype.$http = axios
 let draw = new Vue({
     el: '#vue-content',
     data: {
+        loginfo: '',
         ssrNum: 4,
         ssrCoupon: '4',
         ssrP: 8,
@@ -152,12 +161,14 @@ let draw = new Vue({
         nP: 28,
         newCoupon: 5,
         drawTimes: 100,
+        maxRepeatTimes: 5,
         allCoupon: '',
         allNewCoupon: '',
         allRepeatCoupon: '',
         newTimes: '',
         repeatTimes: '',
         getAllTimes: '',
+        baodiTimes: '',
     },
     methods: {
         submitForm(event) {
@@ -165,6 +176,9 @@ let draw = new Vue({
             let data = this.$data
             let formData = new FormData()
             for(let i in data) {
+                if (i === 0) {
+                  continue
+                }
                 if (data[i] < 0) {
                     alert('参数错误')
                     return
@@ -185,6 +199,8 @@ let draw = new Vue({
                     draw.$data.newTimes = info.newTimes
                     draw.$data.repeatTimes = info.repeatTimes
                     draw.$data.getAllTimes = info.getAllTimes
+                    draw.$data.baodiTimes = info.baodiTimes
+                    draw.$data.loginfo = info.loginfo
                 } else {
                     alert('网络错误，请联系管理员')
                 }

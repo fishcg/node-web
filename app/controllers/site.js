@@ -74,12 +74,14 @@ var actions = {
     return {}
   },
   drawCard2: function () {
+    let log = ''
     let allNewCoupon = 0
     let allRepeatCoupon = 0
     let newTimes = 0
     let repeatTimes = 0
     let getAllTimes = 0
     let data = this.params.request.post
+    let maxRepeatTimes = data.maxRepeatTimes
     for (let i in data) {
       data[i] = parseInt(data[i])
     }
@@ -104,6 +106,12 @@ var actions = {
         NCards.push(card)
       }
     }
+
+    let drawRepeatTimes = 0
+    let baodiTimes = 0
+    let continueTimes = 0
+    let needNewCard = false
+
     let repeatCardIds = []
     /**
      * ssr sr r n
@@ -113,6 +121,7 @@ var actions = {
     let srP = data.srP
     let rP = data.rP
     let nP = data.nP
+
     for (let i = 0; i < data.drawTimes; i++) {
       let cards = []
       let p = Math.floor((Math.random() * (ssrP + srP + rP + nP)))
@@ -128,18 +137,50 @@ var actions = {
       let index = Math.floor((Math.random() * cards.length))
       let card  = cards[index]
       if (repeatCardIds.indexOf(card.id) === -1) {
+        log += `<span style="color: #82c486">${i + 1 - continueTimes}. 抽到了新卡片</span>：${card.id}</br>`
+        drawRepeatTimes = 0
         allNewCoupon += data.newCoupon
         newTimes += 1
         repeatCardIds.push(card.id)
+        needNewCard = false
       } else {
+        if (getAllTimes === 0) {
+          // console.log('还未集齐重复了：' + card.id)
+          // 未集齐卡时，采用保底策略
+          if (needNewCard) {
+            // 需要必顶为新卡时，重新获取卡直到为新卡
+            data.drawTimes += 1
+            continueTimes += 1
+            continue
+          }
+          if (drawRepeatTimes >= maxRepeatTimes) {
+            // 重复次数到保底时，计数清零，重新进行一次循环
+            log += `<span style="color: #6ebdff">触发保底：</span>还未集齐时连续抽到了 ${maxRepeatTimes} 次重复卡</br>`
+            needNewCard = true
+            drawRepeatTimes = 0
+            baodiTimes += 1
+            log += `保底次数 +1，当前保底次数${baodiTimes}</br>`
+            log += `当前重复卡数量 ${repeatCardIds.length}</br>`
+            log += `当前重复卡为: ${repeatCardIds.join(', ')}</br>`
+            continueTimes += 1
+            data.drawTimes += 1
+            continue
+          } else {
+            drawRepeatTimes += 1
+          }
+        }
+        log += `<span style="color: #ff9a6c">${i + 1 - continueTimes}. 抽到了重复卡片</span>：${card.id}</br>`
         repeatTimes += 1
         allRepeatCoupon += (data.newCoupon + card.repeateCoupon)
       }
       if (getAllTimes === 0 && repeatCardIds.length === length) {
-        getAllTimes = i + 1
+        log += `<b style="color: #6162cb">集齐啦</b></br>`
+        getAllTimes = i + 1 - continueTimes
       }
     }
     let allCoupon = allNewCoupon + allRepeatCoupon
+    // console.log('-------------------------------------------------')
+    // console.log(log)
     return {
       allCoupon: allCoupon,
       allNewCoupon: allNewCoupon,
@@ -147,8 +188,15 @@ var actions = {
       newTimes: newTimes,
       repeatTimes: repeatTimes,
       getAllTimes: getAllTimes,
+      baodiTimes: baodiTimes,
+      loginfo: log,
     }
-  }
+  },
+}
+
+function removeRepeatCard(cards, repeatCard) {
+
+  return
 }
 
 exports.actions = actions
