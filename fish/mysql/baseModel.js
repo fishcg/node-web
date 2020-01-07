@@ -28,7 +28,7 @@ class Model {
         return ''
     }
     getDb() {
-        return 'music'
+        return config.mysql.database
     }
     find() {
         this.queryObj = {

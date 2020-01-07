@@ -83,7 +83,7 @@ a {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url(//111.231.232.132:8989/image/static/hearder-banner.png);
+    background-image: url(//s1.acgay.cn/static/images/hearder-banner.png);
     background-position: center -10px;
     background-repeat: no-repeat;
     -webkit-filter: blur(4px);
@@ -95,7 +95,7 @@ a {
     height: 170px;
     margin-top: -42px;
     background: #eee;
-    background-image: url(//111.231.232.132:8989/image/static/hearder-banner.png);
+    background-image: url(//s1.acgay.cn/static/images/hearder-banner.png);
     background-position: center -10px;
     background-repeat: no-repeat;
 }
@@ -216,7 +216,7 @@ a {
     min-width: 0;
     cursor: pointer;
     height: 32px;
-    background: url(//www.acgay.cn/static/node-web/image/icons.png) -653px -720px;
+    background: url(//s1.acgay.cn/static/images/icons.png) -653px -720px;
     margin: 0;
     padding: 0;
     border: 0;
@@ -235,7 +235,7 @@ a {
     margin-left: -500px;
     width: 1000px;
     height: 347px;
-    background: url(//www.acgay.cn/static/node-web/image/footer.png);
+    background: url(//s1.acgay.cn/static/images/footer.png);
     z-index: 10;
     -pie-png-fix: true;
 }
