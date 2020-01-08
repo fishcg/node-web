@@ -2,7 +2,6 @@ var url = require('url')
 var fs = require('fs')
 var config = require('../app/config')
 var path  = require('path')
-var Throw = require(path.join(config.path.fish, 'throw'))
 
 const PATH = config.path
 
