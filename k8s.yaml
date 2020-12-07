@@ -31,9 +31,6 @@ spec:
         - name: config
           configMap:
             name: node-web-ac-cfg
-            items:
-            - key: system.js
-              path: system.js
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -69,4 +66,4 @@ data:
     exports.BASE_PATH = BASE_PATH
 
     exports.SendGiftUserIDS = [34195163, 36782454]
-    exports.sendGiftCycle = 120  // 送礼物周期
+    exports.SendGiftCycle = 120  // 送礼物周期
