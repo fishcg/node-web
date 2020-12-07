@@ -70,4 +70,4 @@ function task() {
 }
 
 // 每分钟执行一次任务
-Utils.timingTask(task, Config.sendGiftCycle)
+Utils.timingTask(task, Config.SendGiftCycle)
