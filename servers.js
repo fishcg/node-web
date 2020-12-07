@@ -63,7 +63,7 @@ class ACLive {
 const AcLive = new ACLive()
 
 function task() {
-  for (let userID of USER_IDS) {
+  for (let userID of Config.SendGiftUserIDS) {
     // 每个主播送出一个 AC 可乐
     AcLive.sendGift(userID, GIFTS.cola, 1)
   }
