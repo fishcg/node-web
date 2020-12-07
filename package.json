@@ -1,6 +1,6 @@
 {
-  "name": "acgay",
-  "version": "1.0.0",
+  "name": "node-web-ac",
+  "version": "0.0.1",
   "description": "node tools",
   "main": "gulpfile.js",
   "scripts": {
