@@ -1,20 +1,20 @@
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: node-web
+  name: node-web-ac
 spec:
   selector:
     # matchLabels:
-    app: node-web
+    app: node-web-ac
   replicas: 1
   template:
     metadata:
       labels:
-        app: node-web
+        app: node-web-ac
     spec:
       containers:
-        - name: node-web
-          image: 127.0.0.1:5000/node-web-ac:0.0.1
+        - name: node-web-ac
+          image: fish.co/node-web-ac:0.0.1
           imagePullPolicy: Never
           args:
             ["servers"]
@@ -30,7 +30,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: node-web-cfg
+            name: node-web-ac-cfg
             items:
             - key: system.js
               path: system.js
@@ -38,9 +38,9 @@ spec:
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: node-web-cfg
+  name: node-web-ac-cfg
   labels:
-    app: node-web
+    app: node-web-ac
 data:
   system.js: |
     const fs = require('fs')
@@ -67,4 +67,6 @@ data:
     exports.DB_FILE = DB_FILE;
     exports.PROTO_ROOT = PROTO_ROOT
     exports.BASE_PATH = BASE_PATH
-    exports.sendGiftCycle = 60  // 送礼物周期
+
+    exports.SendGiftUserIDS = [34195163, 36782454]
+    exports.sendGiftCycle = 120  // 送礼物周期
