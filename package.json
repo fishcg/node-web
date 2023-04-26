@@ -39,7 +39,7 @@
     "mysql": "^2.16.0",
     "nedb": "^1.8.0",
     "node-static": "^0.7.10",
-    "nodemailer": "^4.6.8",
+    "nodemailer": "^6.6.1",
     "nodemailer-smtp-transport": "^2.7.4",
     "path": "^0.12.7",
     "ramda": "^0.25.0",
