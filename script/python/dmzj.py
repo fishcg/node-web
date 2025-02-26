@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 爬取动漫之家 pixiv 图片，参考页面：https://news.dmzj.com/article/48293.html
+# 爬取动漫之家 pixiv 图片，参考页面：https://news.idmzj.com/article/48293.html
 # TODO: 建立数据表与数据关联，图片上传至第三方云服务器存储
 
 import requests
@@ -27,7 +27,7 @@ class DmzjCrawler():
         'accept-language': 'zh-CN,zh;q=0.9',
         'cache-control': 'max-age=0',
         'cookie': 'UM_distinctid=165d8713f431c-03be91a8ec41a-54103715-1fa400-165d8713f4532b; show_tip_1=0',
-        'referer': 'https://news.dmzj.com/article/12875.html',
+        'referer': 'https://news.idmzj.com/article/12875.html',
         'upgrade-insecure-requests': '1',
         'if-modified-since': 'Thu, 04 Jan 2018 01:57:35 GMT',
         'if-none-match': "5a4d8a0f-a939e",
@@ -114,7 +114,7 @@ class DmzjCrawler():
 
     def start(self):
         while (self.page > 0 and self.page < 61):
-           url = 'https://news.dmzj.com/meituxinshang/p{}.html'.format(self.page)
+           url = 'https://news.idmzj.com/meituxinshang/p{}.html'.format(self.page)
            print('\033[1;35m--------------------当前页数：', self.page, '\033[0m')
            self.getImagesViewLinks(url)
            time.sleep(self.sleepTime)

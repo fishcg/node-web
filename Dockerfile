@@ -4,14 +4,14 @@ WORKDIR /home/www/node-web
 
 COPY package.json entrypoint.sh ./
 
-RUN npm config set registry https://registry.npm.taobao.org \
-    && npm install
+RUN npm install
 
 COPY . .
 
 RUN chmod +x ./entrypoint.sh \
     && mkdir .runtime \
-    && chmod -R a+w .runtime
+    && chmod -R a+w .runtime \
+    && chmod -R a+w public
 
 USER nobody
 

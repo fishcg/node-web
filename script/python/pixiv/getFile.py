@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 爬取动漫之家 pixiv 图片，参考页面：https://news.dmzj.com/article/48293.html
+# 爬取动漫之家 pixiv 图片，参考页面：https://news.idmzj.com/article/81636.html
 # TODO: 建立数据表与数据关联，图片上传至第三方云服务器存储
 
 import requests
@@ -25,7 +25,7 @@ class DmzjCrawler():
         'accept-language': 'zh-CN,zh;q=0.9',
         'cache-control': 'max-age=0',
         'cookie': 'UM_distinctid=165d8713f431c-03be91a8ec41a-54103715-1fa400-165d8713f4532b; show_tip_1=0',
-        'referer': 'https://news.dmzj.com/article/12875.html',
+        'referer': 'https://news.idmzj.com/article/12875.html',
         'upgrade-insecure-requests': '1',
         'if-modified-since': 'Thu, 04 Jan 2018 01:57:35 GMT',
         'if-none-match': "5a4d8a0f-a939e",
@@ -59,18 +59,16 @@ class DmzjCrawler():
             r = self.get(url)
             html = r.text
             soup = BeautifulSoup(html, 'html.parser')
-            p_images = soup.find_all('p', style='text-align: center;')
+            news_content_con = soup.find('div', class_='news_content_con')
+            p_images = news_content_con.find_all('img')
             if len(p_images) == 0:
                 return None
             # 新增专题
             now = int(time.time())
             date = '{}{}'.format(time.strftime('%Y%m%d', time.localtime(now)),  now)
-            for p_image in p_images:
-                img = p_image.find('img')
-                if not img:
-                  continue
-                url = img['src']
-                p_name = img['alt']
+            for img in p_images:
+                url = img.get('src')
+                p_name = img.get('title')
                 p_object = re.search( r'id=(\d*)\..*', p_name, re.I)
                 p_id = int(p_object.group(1)) if p_object else 0
                 # 获取文件后缀名
@@ -79,7 +77,7 @@ class DmzjCrawler():
                 name = hashlib.md5(old_name.encode(encoding='UTF-8')).hexdigest() + etc
                 downloadPath = os.path.join(self.downloadPath, date)
                 self.downloadImage(url, downloadPath, name)
-            # print('\033[1;32m--------------------已创建：', title, '\033[0m')
+            #print('\033[1;32m--------------------已创建：', title, '\033[0m')
             filesPath = self.downloadPath + '/' + date
             # 进行压缩
             # fileszipName = filesPath + '.zip'
@@ -119,13 +117,13 @@ class DmzjCrawler():
         return r
 
     def start(self):
-        url = 'https://news.dmzj.com/meituxinshang/p1.html'
+        url = 'https://news.idmzj.com/meituxinshang/p1.html'
         # print('\033[1;35m--------------------当前页数：', 1, '\033[0m')
         url = self.getImagesViewLinks(url, False)
         print(url)
 
     def startDowndoad(self):
-        url = 'https://news.dmzj.com/meituxinshang/p1.html'
+        url = 'https://news.idmzj.com/meituxinshang/p1.html'
         dirPath = self.getImagesViewLinks(url)
         print(dirPath)
 

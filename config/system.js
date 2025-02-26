@@ -16,7 +16,7 @@ for (let PATH of PATHS) {
 }
 
 exports.PYTHON = 'python';
-exports.ENV = "prod"; // dev or prod
+exports.ENV = "dev"; // dev or prod
 exports.TEMP_PATH = TEMP_PATH;
 exports.LOG_PATH = LOG_PATH;
 exports.DB_FILE = DB_FILE;

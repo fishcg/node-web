@@ -7,7 +7,13 @@ class Mysql():
     def __init__(self):
         # 打开数据库连接
         # print('DB 开启连接')
-        self.db = pymysql.connect(mysql['host'], mysql['user'], mysql['password'], mysql['database'])
+        self.db = pymysql.connect(
+            host=mysql['host'],
+            user=mysql['user'],
+            password=mysql['password'],
+            database=mysql['database'],
+            port=mysql['port']
+        )
         # 使用 cursor() 方法创建一个游标对象 cursor
         self.cursor = self.db.cursor()
 

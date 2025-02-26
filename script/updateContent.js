@@ -25,7 +25,7 @@ let recipients = ['353740902@qq.com']
 // 每 4 时更新一次专题美图
 timingTask(updateTopic, 14400)
 // 每小时更新一次新闻
-timingTask(updateNews, 3600)
+// timingTask(updateNews, 3600)
 
 /**
  * 更新新闻
@@ -122,16 +122,23 @@ async function updateTopic() {
     await nedb.updateASync({ doc_type: nedb.docTypes.PIXIV}, { $set: { page_url: pageUrl } })
     let filesPath = await getPixivFile()
     if (!filesPath) {
-      logger.warn('美图专题图片文件夹地址出错')
+      logger.error('获取美图专题图片文件夹地址出错')
       return
     }
+    /*if (!fs.existsSync(filesPath)){
+      fs.mkdirSync(filesPath, { recursive: true })
+    }*/
     let topic = null
     let imageCount = 0
     // 存入数据库并将图片上传至 OSS
     // TODO: 优化回调为 Promise
     fs.readdir(filesPath, async function (err, files) {
       if (err) {
-        logger.error(err)
+        logger.error('读取美图文件夹出错：' + err)
+        return
+      }
+      if (files.length === 0) {
+        logger.error('未抓取到美图专题图片')
         return
       }
       //遍历读取到的文件列表
@@ -143,6 +150,7 @@ async function updateTopic() {
           // 创建专题
           topic = await createTopic(title, saveName, timeStamp)
           if (!topic) {
+            logger.error(`创建图片专题数据失败`)
             continue
           }
         }
