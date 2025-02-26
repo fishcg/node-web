@@ -25,7 +25,7 @@ let recipients = ['353740902@qq.com']
 // 每 4 时更新一次专题美图
 timingTask(updateTopic, 14400)
 // 每小时更新一次新闻
-// timingTask(updateNews, 3600)
+timingTask(updateNews, 3600)
 
 /**
  * 更新新闻
@@ -82,7 +82,7 @@ async function updateNews() {
     await News.model.updateByPk(news.id, { cover: `'${cover}'`, content: `'${content}'`, status: 1 })
     // TODO 修改失败以后做相应处理
     // 若记录值不同，替换为最新新闻页面地址
-    await logger.info(`新闻更新完成：${news.title}(${news.id})`)
+    logger.info(`新闻更新完成：${news.title}(${news.id})`)
     let htmlContent = `<a href="${webParams.domain}/news/view?id=${news.id}">${news.title}</a>(${news.id})</br>${content}`
     await sendEmail('Acgay 新闻已更新', `${htmlContent}`, recipients)
     return true
@@ -169,7 +169,7 @@ async function updateTopic() {
         <br /><b style="color: #6c9e71">[图片数量]</b><br />${imageCount}`
       await sendEmail(subject, content, recipients)
       fs.rmdir(filesPath, err => {})
-      await logger.info(`专题美图更新完成：${title}(${topic.insertId})`)
+      logger.info(`专题美图更新完成：${title}(${topic.insertId})`)
     })
     return true
   } catch (e) {
