@@ -37,7 +37,7 @@ class Topic extends baseModel.model {
       throw new Error(`查询专题失败: ${error.message}`)
     }
   }
-  async findByStatus(status) {
 }
 
 exports.model = new Topic()
+
