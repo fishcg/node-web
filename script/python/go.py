@@ -11,9 +11,10 @@ from db import Mysql
 # print(data2)
 # 配置
 config = {
-    'downloadPath': 'F:\\test', # 下载根目录
+    'downloadPath': './public/image/topic/', # 下载根目录
     'taskMaxNum': 5, # 多进程下载时并发数量
     'sleepTime': 1, # 防 BAN 延迟请求秒数
+    'page': 43, # 页数，倒序抓取
 }
 
 # 开启任务

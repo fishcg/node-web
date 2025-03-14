@@ -34,7 +34,7 @@ class DmzjCrawler():
         self.oldUrl = oldUrl
 
     def start(self):
-        url = 'https://news.idmzj.com/p1.html'
+        url = 'https://news.idmzj.com/p2.html'
         newsID = self.createNews(url)
         print(newsID)
 

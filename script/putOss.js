@@ -78,21 +78,23 @@ async function putSound() {
 async function putImage() {
   let images = await Image.model.find()
     .select('id, p_id, name, url, create_time')
-    // .where('topic_id = ?', [567])
+    .where('topic_id >= ? AND topic_id <= ?', [2531, 999999])
     .order('id ASC')
     .all()
-  for (image of images) {
-    let imagePath = '../public/image/topic/' + image.url
+  console.log(`需要上传数量：${images.length}`)
+  let i = 0
+  for (let image of images) {
+    let imagePath = './public/image/topic/' + image.url
     let ossPath = 'topic/' + image.url
-    // let output_file = '../app/runtime/aa.png'
     try {
-      let res =  await oss.put(ossPath, imagePath)
+      await oss.put(ossPath, imagePath)
     } catch (e) {
       console.log(`上传失败：${image.id}`)
     }
+    console.log(i++)
   }
   console.log('上传完成！')
 }
-putSound()
-// putImage()
+// putSound()
+putImage()
 return false

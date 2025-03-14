@@ -19,7 +19,7 @@ class DmzjCrawler():
     x = 0
     taskNum = 0
     # 爬取第几页，进程运行时自增
-    page = 60
+    page = 40
     # 请求头
     headers = {
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -61,16 +61,30 @@ class DmzjCrawler():
         try:
             r = self.get(url)
             html = r.text
+            #soup = BeautifulSoup(html, 'html.parser')
+            #p_images = soup.find_all('p', style='text-align:center')
             soup = BeautifulSoup(html, 'html.parser')
-            p_images = soup.find_all('p', style='text-align:center')
+            news_content_con = soup.find('div', class_='news_content_con')
+            p_images = news_content_con.find_all('img')
             if len(p_images) > 0:
                 # 新增专题
                 now = int(time.time())
-                topic_id = Mysql.create("INSERT INTO lab_topic (title, create_time, update_time) VALUES ('%s', %s, %s)" % (title, now, now))
+                topic_url = p_images[0].get('src')
+                topic_name = p_images[0].get('title')
+                print(topic_url)
+                topic_etc = os.path.splitext(topic_url)[1]
+                topic_date = time.strftime('%Y%m%d',time.localtime(time.time()))
+                topic_old_name = topic_date + str(round(time.time() * 1000)) + topic_name
+                topic_name = hashlib.md5(topic_old_name.encode(encoding='UTF-8')).hexdigest() + topic_etc
+                topic_save_path = topic_date + '/' + topic_name
+                topic_id = Mysql.create("INSERT INTO lab_topic (title, cover, create_time, update_time) VALUES ('%s', '%s', %s, %s)" % (title, topic_save_path, now, now))
                 images_values = [] 
                 for p_image in p_images:
-                    url = p_image.img['src']
-                    p_name = p_image.img['alt']
+                    #url = p_image.img['src']
+                    #p_name = p_image.img['alt']
+                    url = p_image.get('src')
+                    print(url)
+                    p_name = p_image.get('title')
                     p_object = re.search( r'id=(\d*)\..*', p_name, re.I)
                     p_id = int(p_object.group(1)) if p_object else 0
                     # 获取文件后缀名
