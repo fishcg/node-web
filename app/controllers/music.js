@@ -12,6 +12,8 @@ var mutils = require(path.join(config.path.fish, 'mutils.js'))
 var date = mutils.date
 var Fish = {}
 
+const CATALOG_ID_ASMR = 100
+
 var actions = {
   params: {},
   index: async() => {
@@ -28,7 +30,8 @@ var actions = {
       .all()
     let vocaloidSounds = await Music.model.find()
       .select('id, subject, photo')
-      .limit(10)
+      .where('music_category_id = ?', [CATALOG_ID_ASMR])
+      .limit(60)
       .order('RAND()')
       .all()
     let hotSounds = await Music.model.find()
