@@ -13,6 +13,7 @@ var date = mutils.date
 var Fish = {}
 
 const CATALOG_ID_ASMR = 100
+const CATALOG_ID_VOCALOID = 101
 
 var actions = {
   params: {},
@@ -31,14 +32,14 @@ var actions = {
     let vocaloidSounds = await Music.model.find()
       .select('id, subject, photo')
       .where('music_category_id = ?', [CATALOG_ID_ASMR])
-      .limit(60)
+      .limit(20)
       .order('RAND()')
       .all()
     let hotSounds = await Music.model.find()
       .select('id, subject, photo')
-      .where('hot = ?', [1])
+      .where('music_category_id = ?', [CATALOG_ID_VOCALOID])
       .limit(10)
-      .order('created DESC')
+      .order('RAND()')
       .all()
     let otherSounds = await Music.model.find()
       .select('id, subject, photo')
