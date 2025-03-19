@@ -14,6 +14,7 @@ var Fish = {}
 
 const CATALOG_ID_ASMR = 100
 const CATALOG_ID_VOCALOID = 101
+const CATALOG_ID_LIGHT = 102
 
 var actions = {
   params: {},
@@ -22,6 +23,7 @@ var actions = {
     let recommendSounds = await Music.model.find()
       .select('id, subject, author, views, photo')
       .where('top = ?', [1])
+      .order('id DESC')
       .limit(4)
       .all()
     let newSounds = await Music.model.find()
@@ -32,12 +34,18 @@ var actions = {
     let vocaloidSounds = await Music.model.find()
       .select('id, subject, photo')
       .where('music_category_id = ?', [CATALOG_ID_ASMR])
-      .limit(20)
+      .limit(10)
       .order('RAND()')
       .all()
     let hotSounds = await Music.model.find()
       .select('id, subject, photo')
       .where('music_category_id = ?', [CATALOG_ID_VOCALOID])
+      .limit(10)
+      .order('RAND()')
+      .all()
+    let lightSounds = await Music.model.find()
+      .select('id, subject, photo')
+      .where('music_category_id = ?', [CATALOG_ID_LIGHT])
       .limit(10)
       .order('RAND()')
       .all()
@@ -51,6 +59,7 @@ var actions = {
       newSounds: newSounds,
       vocaloidSounds: vocaloidSounds,
       hotSounds: hotSounds,
+      lightSounds: lightSounds,
       otherSounds: otherSounds,
     })
     return {

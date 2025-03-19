@@ -301,7 +301,9 @@
                 <span class="name">雨声助眠</span>
             </div>
             <div class="app-download">
-                <img alt="雨" style="height: 315px" src="/dev/music/rain.gif">
+                <a href="/music/play?id=625" target="_blank">
+                    <img alt="雨" style="height: 315px" src="/dev/music/rain.gif">
+                </a>
             </div>
         </div>
     </div>
@@ -335,7 +337,9 @@
                 <span class="name">清凉夏日</span>
             </div>
             <div class="app-download">
-                <img alt="清凉夏日" style="height: 315px" src="/dev/music/sun.png">
+                <a href="/music/play?id=679" target="_blank">
+                    <img alt="经典合集" style="height: 315px" src="/dev/music/sun.png">
+                </a>
             </div>
         </div>
     </div>
@@ -349,15 +353,15 @@
             </div>
             <div class="clearfix">
                 <ul class="clearfix">
-                    <li class="module-elem" v-for="hotSound in otherSounds">
-                        <a :href="'/music/play?id=' + hotSound.id" target="_blank">
+                    <li class="module-elem" v-for="lightSound in lightSounds">
+                        <a :href="'/music/play?id=' + lightSound.id" target="_blank">
                             <div class="module-elem-cover">
-                                <img :alt="hotSound.subject" :src="hotSound.photo"
+                                <img :alt="lightSound.subject" :src="lightSound.photo"
                                      onerror="this.src='/dev/music/elem5.webp'">
                             </div>
-                            <div :title="hotSound.subject"
+                            <div :title="lightSound.subject"
                                  class="module-elem-title fish-font">
-                                {{hotSound.subject}}
+                                {{lightSound.subject}}
                             </div>
                         </a>
                     </li>
@@ -366,10 +370,12 @@
         </div>
         <div class="mudule-right">
             <div class="headline headline-right clearfix">
-                <span class="name">记忆黄昏</span>
+                <span class="name">最热歌曲</span>
             </div>
             <div class="app-download">
-                <img alt="回忆的下午" style="height: 315px" src="/dev/music/xiyang.jpg">
+                <a href="/music/play?id=688" target="_blank">
+                    <img alt="回忆的下午" style="height: 315px" src="/dev/music/xiyang.jpg">
+                </a>
             </div>
         </div>
     </div>
@@ -379,19 +385,19 @@
     <div id="hot-sound" class="clearfix " scrollshow="true">
         <div class="module-left">
             <div class="headline clearfix">
-                <span class="module-name">VOCALOID·UTAU</span>
+                <span class="module-name">OTHER</span>
             </div>
             <div class="clearfix">
                 <ul class="clearfix">
-                    <li class="module-elem" v-for="hotSound in hotSounds">
-                        <a :href="'/music/play?id=' + hotSound.id" target="_blank">
+                    <li class="module-elem" v-for="otherSound in otherSounds">
+                        <a :href="'/music/play?id=' + otherSound.id" target="_blank">
                             <div class="module-elem-cover">
-                                <img :alt="hotSound.subject" :src="hotSound.photo"
+                                <img :alt="otherSound.subject" :src="otherSound.photo"
                                      onerror="this.src='/dev/music/elem5.webp'">
                             </div>
-                            <div :title="hotSound.subject"
+                            <div :title="otherSound.subject"
                                  class="module-elem-title fish-font">
-                                {{hotSound.subject}}
+                                {{otherSound.subject}}
                             </div>
                         </a>
                     </li>
@@ -431,6 +437,7 @@
             newSounds: fishData.newSounds,
             vocaloidSounds: fishData.vocaloidSounds,
             hotSounds: fishData.hotSounds,
+            lightSounds: fishData.lightSounds,
             otherSounds: fishData.otherSounds,
         }
     })
