@@ -3,6 +3,7 @@ const fs = require('fs')
 const md5 = require('md5')
 const R = require('ramda')
 const webParams = require('../webParams')
+const { Apm } = require('../../component/Apm')
 
 var config = require(path.join(__dirname, '../config.js'))
 var Music = require(path.join(config.path.app, 'models/Music.js'))
@@ -70,11 +71,10 @@ var actions = {
   // 播放页
   play: async function () {
     let id = this.params.request.get.id ? this.params.request.get.id : 1
-    let sound = await
-      Music.model.find()
-        .select('id, subject, author, views, photo, url, created, replies')
-        .where('id = ?', [id])
-        .one()
+    let sound = await Music.model.find()
+      .select('id, subject, author, views, photo, url, created, replies')
+      .where('id = ?', [id])
+      .one()
     sound.created = date(sound.created, 'y-MM-dd HH:mm:ss')
     if (sound.url.substr(0, 5) === 'sound') {
       sound.url = webParams.staticPath + '/' + sound.url
@@ -86,51 +86,46 @@ var actions = {
   create: async function () {
     return {}
   },
-upload: async function () {
+  upload: async function () {
     var files = this.params.request.files
+    let filesName = ''
     if (files.length > 0) {
-        var files_name = path.join(config.path.app, 'runtime/files/' + files[0].originalname)
-        fs.readFile(files[0].path, function (err, data) {
-            fs.writeFile(files_name, data, function (err) {
-                if (err) {
-                    console.log(err)
-                } else {
-                    response = {
-                        message: 'File uploaded successfully',
-                        filename: 'files_name'
-                    };
-                }
-            });
-        });
+      filesName = path.join(config.path.app, 'runtime/files/' + files[0].originalname)
+      fs.readFile(files[0].path, function (err, data) {
+        fs.writeFile(filesName, data, function (err) {
+          if (err) {
+            Apm.captureError(err)
+          }
+        })
+      })
     } else {
-        return '文件上传失败'
+      return '文件上传失败'
     }
-    return files_name
-}
-,
-createmusic: async function () {
+    return filesName
+  },
+  createmusic: async function () {
     var subject = this.params.request.post.subject
     var summary = this.params.request.post.summary
     var category_id = parseInt(this.params.request.post.categoryId)
     var photoFile = this.params.request.files.photo
     var soundFile = this.params.request.files.sound
     if (!photoFile) {
-        return '请上传图片'
+      return '请上传图片'
     }
     if (!soundFile) {
-        return '请上传音频'
+      return '请上传音频'
     }
     var photo = await
     uploadFile(photoFile, 'photo')
     var soundUrl = await
     uploadFile(soundFile, 'sound')
     if (!photo || !soundUrl) {
-        return '文件类型错误'
+      return '文件类型错误'
     }
     // console.log(this.params.request.post)
     addMusic(subject, summary, category_id, photo, soundUrl)
     return '歌曲创建成功'
-}
+  }
 }
 
 async function addMusic(subject, summary, category_id, photo, soundUrl) {

@@ -4,7 +4,9 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const multer  = require('multer')
 
+const { http } = require('./app/config.js')
 const index = require('./public/index.js')
+const { Apm } = require('./component/Apm.js')
 
 let fileServer = new nodeStatic.Server('public')
 let app = express()
@@ -34,8 +36,8 @@ var handleReq = function (req, res) {
   }
   index.serve(req, res)
 }
-app.listen(8989)
 
-// 在此处可配置监听的端口号
-// http.createServer(handleReq).listen(8787, '127.0.0.1')
-console.log('This servers is running !')
+let port = http.port || 80
+app.listen(port)
+
+console.log('This servers is running ' + port)
