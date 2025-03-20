@@ -83,6 +83,10 @@ var actions = {
       fishData: JSON.stringify({ sound: sound }),
     }
   },
+  error: async function () {
+    Apm.captureError('error test')
+    return {}
+  },
   create: async function () {
     return {}
   },
