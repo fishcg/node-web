@@ -1,13 +1,23 @@
-/**
- * 异常类
- *
- */
-var HttpException = function (httpCode, message, code)
-{
-    var code = code || -1
-    this.httpCode = httpCode;
-    this.message = message;
-    this.code = code;
+'use strict';
+
+class ExtendableError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = this.constructor.name;
+        if (typeof Error.captureStackTrace === 'function') {
+            Error.captureStackTrace(this, this.constructor);
+        } else {
+            this.stack = (new Error(message)).stack;
+        }
+    }
 }
 
-exports.HttpException = HttpException
+class HttpError extends ExtendableError {
+    constructor(status, message, code) {
+        super(message);
+        this.status = status;
+        this.code = code || -1;
+    }
+}
+
+exports.HttpError = HttpError;

@@ -7,7 +7,7 @@ const { Apm } = require('../../component/Apm')
 
 var config = require(path.join(__dirname, '../config.js'))
 var Music = require(path.join(config.path.app, 'models/Music.js'))
-// var Throw = require(path.join(config.path.fish, 'throw.js'))
+const { HttpError }  = require('../../fish/throw.js')
 var mutils = require(path.join(config.path.fish, 'mutils.js'))
 
 var date = mutils.date
@@ -75,6 +75,9 @@ var actions = {
       .select('id, subject, author, views, photo, url, created, replies')
       .where('id = ?', [id])
       .one()
+    if (!sound) {
+      throw new HttpError(404, '音频不存在');
+    }
     sound.created = date(sound.created, 'y-MM-dd HH:mm:ss')
     if (sound.url.substr(0, 5) === 'sound') {
       sound.url = webParams.staticPath + '/' + sound.url

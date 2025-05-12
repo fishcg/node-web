@@ -3,6 +3,7 @@ const Image = require('../models/Image.js')
 const Maimeng = require('../../lib/Maimeng')
 const webParams = require('../webParams')
 const R = require('ramda')
+const { HttpError }  = require('../../fish/throw.js')
 
 var Fish = {}
 
@@ -27,7 +28,7 @@ var actions = {
     let id = this.params.request.get.id ? parseInt(this.params.request.get.id) : 0
     let topic = await Topic.model.find().select('id, title, create_time').where('id = ' + id).one()
     if (!topic) {
-      throw new Throw.HttpException(404, '专题不存在');
+      throw new HttpError(404, '专题不存在');
     }
     return {
       id: id,

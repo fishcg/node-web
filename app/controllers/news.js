@@ -2,7 +2,7 @@ const path = require('path')
 const R = require('ramda')
 const config = require(path.join(__dirname, '../config'))
 const News = require(path.join(config.path.app, 'models/News'))
-const Throw = require(path.join(config.path.fish, 'throw'))
+const { HttpError }  = require('../../fish/throw.js')
 const webParams = require('../webParams')
 const { date } = require('../../lib/Utils')
 
@@ -26,6 +26,9 @@ var actions = {
       return false
     }
     let news = await News.model.find().select('id, title, cover, content').where('id = ?', [id]).one()
+    if (!news) {
+      throw new HttpError(404, '新闻不存在');
+    }
     return {
       id: news.id,
       title: news.title,

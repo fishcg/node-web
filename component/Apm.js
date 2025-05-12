@@ -5,7 +5,7 @@ let Apm = null;
 if (!config.apm || !config.apm.host) {
   class ApmClass {
     captureError(error, options) {
-      console.error(error, options)
+      console.error(error)
     }
   }
   Apm = new ApmClass()

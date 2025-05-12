@@ -2,6 +2,10 @@ var url = require('url')
 var fs = require('fs')
 var config = require('../app/config')
 var path  = require('path')
+var config = require('../app/config')
+const { HttpError }  = require('../fish/throw.js')
+const { Apm } = require("../component/Apm");
+
 
 const PATH = config.path
 
@@ -37,15 +41,26 @@ var createPage = async function (req, res) {
     // 通过路由获取要请求的控制器及动作
     var actionInfo = await getActionInfo(req)
     // 获取动态数据
-    var pageData = await getPageData(actionInfo)
-
-    var pageString = ''
+    let pageString = ''
+    let pageData = null
+    try {
+        pageData = await getPageData(actionInfo)
+    } catch (e) {
+        pageData = null
+        if (e instanceof HttpError || (e.prototype && e.prototype instanceof HttpError)) {
+            let errorMessage = getErrorMessage(e, true);
+            if (e.status  === 404) {
+                pageString = fs.readFileSync(path.join(PATH.app, '404.html'), 'utf-8')
+            } else {
+                pageString = fs.readFileSync(path.join(PATH.app, '500.html'), 'utf-8')
+            }
+        } else {
+            let errorMessage = getErrorMessage(e, false);
+            pageString = fs.readFileSync(path.join(PATH.app, '500.html'), 'utf-8')
+        }
+    }
     // 获取静态数据
-    if (pageData === undefined) {
-        // 若动作或控制器不存在，404
-        var viewPath = path.join(PATH.app, '404.html')
-        pageString = fs.readFileSync(viewPath, 'utf-8')
-    } else {
+    if (pageData) {
         pageString = await getStaticData(actionInfo, pageData)
     }
     if (typeof(pageString) !== 'string') {
@@ -97,17 +112,19 @@ async function getPageData(actionInfo) {
         // var actionName = 'action' + actionInfo[1].substring(0, 1).toUpperCase() + actionInfo[1].substring(1)h)
         controller.actions.params = Fish;
         var func = 'controller.actions.' + actionInfo[1] + '()'
-        try {
-            // console.log(func)
-            var data = eval(func)
-            return data
-        } catch (err) {
-            console.log(err.message)
-            return undefined
-        }
+        return await eval(func)
     } else {
         return undefined
     }
+}
+
+function getErrorMessage(e, isHttpError = true) {
+    if ((!isHttpError || e.status >= 500)) {
+        // console.log(e.message)
+        Apm.captureError(e)
+        return '服务器内部错误'
+    }
+    return e.message
 }
 
 /**
