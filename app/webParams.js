@@ -1,5 +1,5 @@
-const staticPath = 'http://s1.acgay.cn'
-const domain = 'http://www.acgay.cn'
+const staticPath = 'https://acgay.oss-cn-hangzhou.aliyuncs.com'
+const domain = 'https://www.acgay.cn'
 // 邮件配置
 module.exports = {
   domain: domain,
