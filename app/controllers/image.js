@@ -26,6 +26,9 @@ var actions = {
   topicview: async function () {
     let id = this.params.request.get.id ? parseInt(this.params.request.get.id) : 0
     let topic = await Topic.model.find().select('id, title, create_time').where('id = ' + id).one()
+    if (!topic) {
+      throw new Throw.HttpException(404, '专题不存在');
+    }
     return {
       id: id,
       title: topic.title,

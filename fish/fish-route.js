@@ -97,18 +97,14 @@ async function getPageData(actionInfo) {
         // var actionName = 'action' + actionInfo[1].substring(0, 1).toUpperCase() + actionInfo[1].substring(1)h)
         controller.actions.params = Fish;
         var func = 'controller.actions.' + actionInfo[1] + '()'
-        //try {
+        try {
             // console.log(func)
             var data = eval(func)
-            /*if (!data) {
-                var HttpException = new Throw.HttpException(400, '参数错误');
-                throw  HttpException
-            }*/
             return data
-        //} catch (err) {
+        } catch (err) {
             console.log(err.message)
             return undefined
-        //}
+        }
     } else {
         return undefined
     }
