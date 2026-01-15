@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: node-web-server
+  name: node-web-service
 spec:
   type: NodePort
   ports:
@@ -11,14 +11,14 @@ spec:
   selector:
     app: node-web
 ---
-apiVersion: v1
-kind: ReplicationController
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: node-web
 spec:
   selector:
-    # matchLabels:
-    app: node-web
+    matchLabels:
+      app: node-web
   replicas: 1
   template:
     metadata:
@@ -28,7 +28,7 @@ spec:
       containers:
         - name: node-web
           image: 127.0.0.1:5000/node-web:1.0.0
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           args:
             ["servers"]
           volumeMounts:

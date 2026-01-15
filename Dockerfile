@@ -1,10 +1,10 @@
-FROM node:11.1.0-alpine
+FROM node:24.13.0-alpine
 
 WORKDIR /home/www/node-web
 
-COPY package.json entrypoint.sh ./
+COPY package.json package-lock.json entrypoint.sh ./
 
-RUN npm install
+RUN npm install pnpm -g && pnpm install
 
 COPY . .
 
