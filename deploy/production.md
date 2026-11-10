@@ -12,7 +12,7 @@
 | k3s 控制面 | node0 `120.27.204.155`（内网 `172.24.173.77`） |
 | nginx / 证书 / MySQL | node1 `47.97.156.213`（内网 `172.24.173.76`） |
 | 新应用 | Deployment `node-web-next`，1 副本，容器端口 8989 |
-| 新应用镜像 | `172.24.173.77:30500/node-web:cover-1` |
+| 新应用镜像 | `172.24.173.77:30500/node-web:72a27ea` |
 | 新应用 Service | `node-web-next-service`，NodePort **30190** |
 | 旧应用（保留） | Deployment `node-web`，Service `node-web-service`，NodePort 30089 |
 | 生产数据库 | node1 Docker 容器 `test_mysql`（3307→3306），库 `acgay`，用户 `acgay_app` |
