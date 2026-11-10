@@ -1,4 +1,7 @@
-# AcGay 音频站 —— Kubernetes / k3s 部署清单
+# AcGay 音频站 —— Kubernetes / k3s 部署清单（示例，非当前生产清单）
+#
+# 当前生产实际使用 Deployment `node-web-next` + NodePort 30190，由 node1
+# nginx 反代；不要直接 apply 本文件覆盖现网。见 deploy/production.md。
 #
 # 组成：
 #   - Deployment（2 副本，滚动发布，零停机）
