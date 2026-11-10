@@ -3,7 +3,7 @@ import type { Section, SectionSlug } from "./types";
 export const SITE = {
   name: "幻想の城",
   shortName: "AcGay",
-  tagline: "把耳机戴好，世界就安静了。",
+  tagline: "带好耳机，世界属于你",
   description:
     "幻想の城是一个安静听声音的地方：音乐、ASMR、有声书与杂谈，收藏你喜欢的每一段声音。",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",

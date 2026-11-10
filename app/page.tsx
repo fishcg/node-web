@@ -116,9 +116,9 @@ export default async function HomePage() {
             </span>
 
             <h1 className="mt-6 font-serif text-[clamp(2.15rem,7.4vw,4.25rem)] leading-[1.12] tracking-[-0.01em] text-ink">
-              把耳机戴好，
+              带好耳机，
               <span className="mt-1 block text-ink">
-                世界就<span className="text-coral">安静</span>了。
+                世界<span className="text-coral">属于你</span>
               </span>
             </h1>
 

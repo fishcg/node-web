@@ -75,10 +75,19 @@ export async function SiteFooter() {
         </div>
 
         <div className="mt-10 flex flex-col gap-3 border-t border-line pt-6 text-xs text-ink-muted sm:mt-12 sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            © {year} {SITE.name} · 声音版权归原作者所有
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span>© {year} {SITE.name} · 声音版权归原作者所有</span>
+            <span aria-hidden>·</span>
+            <a
+              href="https://beian.miit.gov.cn/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors duration-300 hover:text-coral-deep"
+            >
+              黔ICP备16010721号-2
+            </a>
           </p>
-          <p className="font-serif tracking-wide">把耳机戴好，世界就安静了。</p>
+          <p className="font-serif tracking-wide">带好耳机，世界属于你</p>
         </div>
       </div>
     </footer>
