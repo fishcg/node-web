@@ -1,0 +1,227 @@
+# AcGay 音频站 —— Kubernetes / k3s 部署清单
+#
+# 组成：
+#   - Deployment（2 副本，滚动发布，零停机）
+#   - Service（ClusterIP，80 → 容器 3000）
+#   - Ingress（可选，默认走 k3s 自带的 traefik；不用 Ingress 可整段删除）
+#   - PodDisruptionBudget（滚动/驱逐时至少保留 1 个可用副本）
+#
+# 前置条件（只需做一次）：
+#   kubectl create secret generic node-web-secret \
+#     --from-literal=DB_HOST=mysql.default.svc.cluster.local \
+#     --from-literal=DB_PORT=3306 \
+#     --from-literal=DB_USER=acgay \
+#     --from-literal=DB_PASSWORD='<strong-password>' \
+#     --from-literal=DB_NAME=acgay \
+#     --from-literal=SESSION_SECRET="$(openssl rand -hex 32)" \
+#     --from-literal=OSS_BASE_URL=https://acgay.oss-cn-hangzhou.aliyuncs.com \
+#     --from-literal=NEXT_PUBLIC_SITE_URL=https://acgay.cn
+#
+# 发布：
+#   kubectl apply -f deploy/k8s.yaml
+#   kubectl rollout status deployment/node-web --timeout=180s
+#
+# 说明：
+#   - 镜像 tag 请用提交短 SHA（CI 负责改写），回滚时改回上一个 tag 即可。
+#   - NEXT_PUBLIC_SITE_URL 会被 Next.js 在 *构建* 时内联到客户端产物里；
+#     运行时的这个变量只影响服务端渲染。构建镜像时请同步传 build-arg。
+#   - 数据库迁移/种子见 deploy/README.md，不要放进容器启动命令。
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-web
+  labels:
+    app.kubernetes.io/name: node-web
+    app.kubernetes.io/part-of: acgay
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: node-web
+  template:
+    metadata:
+      labels:
+        app: node-web
+        app.kubernetes.io/name: node-web
+    spec:
+      # 内网 registry 如果开了鉴权，取消下面两行注释并先创建 pull secret。
+      # imagePullSecrets:
+      #   - name: registry-credentials
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: node-web
+          # 首次 apply 可用固定 tag；之后由 CI 改成提交短 SHA。
+          image: 172.24.173.77:30500/node-web:2.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: HOSTNAME
+              value: "0.0.0.0"
+            - name: TZ
+              value: Asia/Shanghai
+            # 数据库与站点配置全部来自 Secret，ConfigMap 里不放任何敏感信息。
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: node-web-secret
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: node-web-secret
+                  key: DB_PORT
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: node-web-secret
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: node-web-secret
+                  key: DB_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: node-web-secret
+                  key: DB_NAME
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: node-web-secret
+                  key: SESSION_SECRET
+            - name: OSS_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: node-web-secret
+                  key: OSS_BASE_URL
+            - name: NEXT_PUBLIC_SITE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: node-web-secret
+                  key: NEXT_PUBLIC_SITE_URL
+          # 就绪探针检查数据库（/api/health 会 select 1）：DB 不可用时摘流量，
+          # 不会把请求打到坏实例上。
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          # 存活探针只探端口，不探数据库：避免 MySQL 抖动导致所有 Pod 一起重启。
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 3
+            failureThreshold: 3
+          lifecycle:
+            # 等 Ingress 把 Pod 从 endpoints 摘掉再退出，滚动发布才真正零中断。
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 5"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-web
+  labels:
+    app.kubernetes.io/name: node-web
+    app.kubernetes.io/part-of: acgay
+spec:
+  type: ClusterIP
+  selector:
+    app: node-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: node-web
+  labels:
+    app.kubernetes.io/name: node-web
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: node-web
+---
+# Ingress 为可选资源：直接把站点暴露到集群外时使用。
+# 如果前面已经有独立的 nginx / 负载均衡（例如按 acgay-deploy 的 NodePort 范式），
+# 删除这一段即可，或在 deploy/README.md 里改用 NodePort 的方式。
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: node-web
+  labels:
+    app.kubernetes.io/name: node-web
+  annotations:
+    # 用 cert-manager 自动签发证书时保留；手工管理证书可删除。
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - acgay.cn
+        - www.acgay.cn
+      secretName: node-web-tls
+  rules:
+    - host: acgay.cn
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: node-web
+                port:
+                  name: http
+    - host: www.acgay.cn
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: node-web
+                port:
+                  name: http

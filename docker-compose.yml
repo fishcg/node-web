@@ -1,0 +1,94 @@
+# Local stack for the AcGay sound library.
+#
+#   docker compose up -d                     # MySQL only (port 3307 on the host)
+#   docker compose --profile app up -d       # MySQL + the Next.js app
+#
+# The MySQL service is deliberately bound to 3307 so it never fights with an
+# existing local MySQL on 3306. Point the host-side scripts at it with:
+#
+#   DB_PORT=3307 pnpm db:init
+#   DB_PORT=3307 pnpm db:seed
+#
+# The app service reads DB_HOST=mysql (the compose network name), so it does
+# not use DB_PORT from the host. It falls back to a clearly insecure local
+# session secret; override it for anything beyond a demo:
+#
+#   SESSION_SECRET=$(openssl rand -hex 32) docker compose --profile app up -d
+
+name: acgay
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+08:00
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-acgay_root}
+      MYSQL_DATABASE: ${DB_NAME:-acgay}
+      MYSQL_USER: ${DB_USER:-acgay}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-acgay_dev}
+      TZ: Asia/Shanghai
+    ports:
+      - "${MYSQL_PORT:-3307}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # Idempotent DDL so a fresh volume already has the tables. Category rows
+      # and demo data still come from `pnpm db:init` / `pnpm db:seed`.
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 30s
+
+  app:
+    # Opt-in so `docker compose up` never starts a half-configured web tier.
+    profiles: ["app"]
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+        OSS_BASE_URL: ${OSS_BASE_URL:-https://acgay.oss-cn-hangzhou.aliyuncs.com}
+    image: acgay/node-web:local
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_USER: ${DB_USER:-acgay}
+      DB_PASSWORD: ${DB_PASSWORD:-acgay_dev}
+      DB_NAME: ${DB_NAME:-acgay}
+      # Local demo default only. Put a real `openssl rand -hex 32` value in
+      # `.env` (copy .env.example) or export SESSION_SECRET before deploying.
+      SESSION_SECRET: ${SESSION_SECRET:-dev-only-insecure-session-secret-change-me}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+      OSS_BASE_URL: ${OSS_BASE_URL:-https://acgay.oss-cn-hangzhou.aliyuncs.com}
+      TZ: Asia/Shanghai
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+volumes:
+  mysql-data:

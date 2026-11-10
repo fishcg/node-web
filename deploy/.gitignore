@@ -1,0 +1,3 @@
+# 永远不要提交真实密钥
+secret.yaml
+*.secret.yaml

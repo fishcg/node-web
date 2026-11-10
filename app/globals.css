@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/*  Design tokens — warm paper record shop, deep-ink listening booth    */
+/* ------------------------------------------------------------------ */
+@theme {
+  --color-paper: #f7f3ec;
+  --color-paper-warm: #fbf8f2;
+  --color-paper-deep: #efe7da;
+  --color-ink: #1c1917;
+  --color-ink-soft: #4b443c;
+  --color-ink-muted: #8c8175;
+  --color-line: #e5ddd0;
+  --color-line-strong: #d9cdb9;
+  --color-coral: #ff5a3c;
+  --color-coral-deep: #d9401f;
+  --color-mist: #7c6cf0;
+  --color-mist-deep: #5a48ce;
+  --color-night: #0b0a0f;
+
+  --font-serif: "Songti SC", "Noto Serif SC", "Source Han Serif SC", "STSong",
+    "SimSun", ui-serif, Georgia, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC",
+    "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", ui-sans-serif,
+    system-ui, sans-serif;
+
+  --radius-card: 1.5rem;
+  --radius-card-lg: 2rem;
+  --shadow-soft: 0 20px 60px -32px rgb(28 25 23 / 0.4);
+  --shadow-lift: 0 30px 70px -36px rgb(28 25 23 / 0.5);
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-fade-up: fade-up 0.7s var(--ease-soft) both;
+  --animate-float: float 9s ease-in-out infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Base                                                              */
+/* ------------------------------------------------------------------ */
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100dvh;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    letter-spacing: -0.012em;
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--color-coral);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-coral);
+    outline-offset: 3px;
+  }
+
+  /* Fine paper grain across the whole page, barely there. */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    pointer-events: none;
+    opacity: 0.032;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+    mix-blend-mode: multiply;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Utilities                                                         */
+/* ------------------------------------------------------------------ */
+@utility no-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Soft raised paper panel used for cards, forms and stats. */
+@utility paper-panel {
+  background-color: color-mix(in oklab, var(--color-paper-warm) 88%, white);
+  border: 1px solid var(--color-line);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.8) inset,
+    var(--shadow-soft);
+}
+
+/* Concentric grooves for decorative record art. */
+@utility vinyl-grooves {
+  background-image: repeating-radial-gradient(
+    circle at 50% 50%,
+    rgb(28 25 23 / 0.14) 0 1px,
+    transparent 1px 6px
+  );
+}
+
+/* Long Chinese display headlines: keep breathing room between lines. */
+@utility display-tight {
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+/* Subtle link underline that grows on hover. */
+@utility link-sweep {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  transition: background-size 0.35s var(--ease-soft);
+
+  &:hover {
+    background-size: 100% 1px;
+  }
+}
