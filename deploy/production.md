@@ -13,6 +13,7 @@
 | nginx / 证书 / MySQL | node1 `47.97.156.213`（内网 `172.24.173.76`） |
 | 新应用 | Deployment `node-web-next`，1 副本，容器端口 8989 |
 | 新应用镜像 | `172.24.173.77:30500/node-web:social-20261110-2015`（社交功能 + 时区修复） |
+| 代码提交 | `ffbe9e5`（分支 `rebuild/nextjs`，已 push GitHub） |
 | 新应用 Service | `node-web-next-service`，NodePort **30190** |
 | 旧应用（保留） | Deployment `node-web`，Service `node-web-service`，NodePort 30089 |
 | 生产数据库 | node1 Docker 容器 `test_mysql`（3307→3306），库 `acgay`，用户 `acgay_app` |
