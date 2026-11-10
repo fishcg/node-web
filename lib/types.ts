@@ -95,6 +95,21 @@ export interface ChatMessage {
   isMine: boolean;
 }
 
+export interface CommentItem {
+  id: number;
+  soundId: number;
+  body: string;
+  likeCount: number;
+  likedByMe: boolean;
+  created: string;
+  author: PublicUser;
+}
+
+export interface CommentPage {
+  items: CommentItem[];
+  nextCursor: number | null;
+}
+
 export interface UnreadCounts {
   notifications: number;
   messages: number;

@@ -19,6 +19,7 @@
 - **全局播放器**：跨页面不中断的底部播放台，播放队列取自当前列表；`/music/play?id=x` 兼容旧链接并 307 到详情页
 - **账号**：登录 / 注册 / 登出（iron-session cookie 会话），`/me` 与 `/me/favorites` 需要登录
 - **收藏**：登录用户可收藏 / 取消收藏，数据库唯一键保证幂等
+- **评论**：`/sound/[id]` 底部可发表评论与点赞；游标分页（首屏 20 条）、点赞批量回填、`lab_music.replies` 与 `like_count` 事务内维护
 - **投稿**：登录用户可在 `/submit` 上传音频和可选封面（OSS），投稿进入待审核，通过后才公开
 - **审核后台**：`/admin/reviews` 查看待审队列，试听后通过或驳回；驳回必须填写原因
 - **系统通知**：审核结果写入 `/me/notifications`，未读数量在头部铃铛与移动端「我的」tab 显示
@@ -153,8 +154,8 @@ node-web/
 
 ## 数据与数据库
 
-- 数据表：`lab_category`（分区/分类）、`lab_music`（声音条目，`status` 0 待审 / 1 发布 / 2 驳回）、`lab_user`（账号，`role` user/admin）、`lab_favorite`（收藏，`(uid, music_id)` 唯一）、`lab_follow`（关注）、`lab_message`（私信）、`lab_notification`（系统通知）。
-- `db/schema.sql` 只含 DDL，全部 `CREATE TABLE IF NOT EXISTS`，可反复执行；已有库升级社交功能时执行 `db/migrations/002_social.sql`。
+- 数据表：`lab_category`（分区/分类）、`lab_music`（声音条目，`status` 0 待审 / 1 发布 / 2 驳回）、`lab_user`（账号，`role` user/admin）、`lab_favorite`（收藏，`(uid, music_id)` 唯一）、`lab_follow`（关注）、`lab_message`（私信）、`lab_notification`（系统通知）、`lab_comment`（音频评论，`(music_id, status, id)` 索引）、`lab_comment_like`（评论点赞，`(comment_id, uid)` 唯一）。
+- `db/schema.sql` 只含 DDL，全部 `CREATE TABLE IF NOT EXISTS`，可反复执行；已有库升级社交功能时执行 `db/migrations/002_social.sql`；评论功能执行 `db/migrations/003_comments.sql`。
 - `scripts/db-init.ts` 建表后 upsert 6 个分类（ASMR / VOCALOID / 轻音乐 / 有声书 / 音乐-其他 / 杂谈）。
 - `scripts/seed.ts` 读取 `data/live-sounds.json` 写入曲目，再创建 `demo/demo1234` 与 4 条示例收藏；全部使用 `onConflict().ignore()/merge()`，重复执行安全。生产环境默认拒绝执行，需显式 `ALLOW_PROD_SEED=1`。
 - 站点中封面与音频走 `OSS_BASE_URL`（默认阿里云 OSS bucket），空封面由 `COVER_FALLBACKS` 渐变兜底。

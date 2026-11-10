@@ -20,13 +20,14 @@ import {
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
+import { CommentSection } from "@/components/comments/comment-section";
 import { FavoriteButton } from "@/components/favorite-button";
 import { PlayButton } from "@/components/player/play-button";
 import { toPlayerTrack } from "@/components/sound-card";
 import { CoverFallback } from "@/components/cover-fallback";
 import { COVER_FALLBACKS, SECTION_BY_SLUG } from "@/lib/constants";
 import { usePlayer } from "@/lib/player-context";
-import type { Sound } from "@/lib/types";
+import type { CommentItem, SessionUser, Sound } from "@/lib/types";
 import {
   cn,
   formatDate,
@@ -43,12 +44,20 @@ interface SoundDetailClientProps {
   sound: Sound;
   related: Sound[];
   initialFavorited: boolean;
+  initialComments: CommentItem[];
+  commentCursor: number | null;
+  initialCommentCount: number;
+  viewer: SessionUser | null;
 }
 
 export function SoundDetailClient({
   sound,
   related,
   initialFavorited,
+  initialComments,
+  commentCursor,
+  initialCommentCount,
+  viewer,
 }: SoundDetailClientProps) {
   const {
     current,
@@ -64,6 +73,8 @@ export function SoundDetailClient({
     setPlaybackRate,
     pause,
   } = usePlayer();
+
+  const [commentCount, setCommentCount] = useState(initialCommentCount);
 
   const active = current?.id === sound.id;
   const playing = active && isPlaying;
@@ -338,7 +349,7 @@ export function SoundDetailClient({
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <MessageCircle aria-hidden="true" className="size-3.5" />
-                {formatMetric(sound.replies)} 条评论
+                {formatMetric(commentCount)} 条评论
               </span>
             </div>
 
@@ -521,7 +532,7 @@ export function SoundDetailClient({
                 { label: "分类", value: sound.categoryName || sectionName },
                 { label: "发布", value: sound.created ? formatDate(sound.created) : "未知" },
                 { label: "播放", value: formatMetric(sound.views) },
-                { label: "评论", value: formatMetric(sound.replies) },
+                { label: "评论", value: formatMetric(commentCount) },
               ].map((item) => (
                 <div
                   key={item.label}
@@ -607,6 +618,15 @@ export function SoundDetailClient({
             </div>
           </aside>
         </div>
+
+        <CommentSection
+          soundId={sound.id}
+          initialItems={initialComments}
+          initialCursor={commentCursor}
+          initialCount={initialCommentCount}
+          viewer={viewer}
+          onCountChange={setCommentCount}
+        />
       </div>
     </div>
   );

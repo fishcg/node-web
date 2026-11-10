@@ -5,6 +5,7 @@ import { cache } from "react";
 import { SoundDetailClient } from "@/components/player/sound-detail-client";
 import { SITE } from "@/lib/constants";
 import { getSessionUser } from "@/lib/auth";
+import { getCommentPage } from "@/lib/queries/comments";
 import {
   getFavoriteIds,
   getRelatedSounds,
@@ -63,9 +64,10 @@ export default async function SoundPage({ params }: SoundPageProps) {
   const [sound, user] = await Promise.all([getSound(soundId), getSessionUser()]);
   if (!sound) notFound();
 
-  const [related, favoriteIds] = await Promise.all([
+  const [related, favoriteIds, comments] = await Promise.all([
     getRelatedSounds(sound, 6),
     user ? getFavoriteIds(user.id) : Promise.resolve(new Set<number>()),
+    getCommentPage(sound.id, user?.id ?? null),
   ]);
 
   return (
@@ -73,6 +75,10 @@ export default async function SoundPage({ params }: SoundPageProps) {
       sound={sound}
       related={related}
       initialFavorited={favoriteIds.has(sound.id)}
+      initialComments={comments.items}
+      commentCursor={comments.nextCursor}
+      initialCommentCount={Math.max(sound.replies, comments.items.length)}
+      viewer={user}
     />
   );
 }
