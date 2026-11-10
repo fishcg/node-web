@@ -90,7 +90,7 @@ pnpm dev          # http://localhost:3000
 | `pnpm lint` | ESLint 检查 |
 | `pnpm typecheck` | `tsc --noEmit` 类型检查 |
 | `pnpm test` | Node 内置 test runner，运行 `tests/*.test.ts` |
-| `pnpm test:backend` | 运行 `tests/backend/*.test.ts`（社交/投稿/审核，需要本地 MySQL 与 OSS 配置） |
+| `pnpm test:backend` | 运行 `tests/backend/*.test.ts`（评论/社交/投稿/审核，需要本地 MySQL 与 OSS 配置） |
 | `pnpm db:init` | 执行 `db/schema.sql`（建表）并 upsert 分类数据 |
 | `pnpm db:seed` | 写入曲目、demo 用户与示例收藏（幂等；生产环境默认拒绝执行） |
 | `pnpm scrape` | 从线上站点抓取曲目列表，更新 `data/live-sounds.json` |
