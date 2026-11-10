@@ -78,6 +78,7 @@ export function SoundDetailClient({
   const progressPercent = seekable
     ? Math.min(100, Math.max(0, (shownProgress / shownDuration) * 100))
     : 0;
+  const volumePercent = Math.min(100, Math.max(0, volume * 100));
   const totalTimeLabel = shownDuration > 0 ? formatDuration(shownDuration) : "--:--";
   // A missing audio source is an empty state, not a fatal error: keep the page
   // browsable but make the transport controls clearly inert.
@@ -431,7 +432,10 @@ export function SoundDetailClient({
                     value={volume}
                     onChange={handleVolume}
                     aria-label="音量"
-                    className="h-1 w-20 cursor-pointer appearance-none rounded-full bg-white/15 accent-[#ff5a3c]"
+                    style={{
+                      background: `linear-gradient(to right, #ff5a3c 0%, #ff5a3c ${volumePercent}%, rgba(255,255,255,0.15) ${volumePercent}%, rgba(255,255,255,0.15) 100%)`,
+                    }}
+                    className="h-1 w-20 cursor-pointer appearance-none rounded-full [&::-moz-range-thumb]:size-2.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#ff5a3c] [&::-webkit-slider-thumb]:size-2.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#ff5a3c] [&::-webkit-slider-thumb]:shadow-[0_0_0_3px_rgba(255,90,60,0.16)]"
                   />
                 </div>
 
@@ -459,7 +463,10 @@ export function SoundDetailClient({
                     value={volume}
                     onChange={handleVolume}
                     aria-label="音量"
-                    className="h-1 w-24 cursor-pointer appearance-none rounded-full bg-white/15 accent-[#ff5a3c]"
+                    style={{
+                      background: `linear-gradient(to right, #ff5a3c 0%, #ff5a3c ${volumePercent}%, rgba(255,255,255,0.15) ${volumePercent}%, rgba(255,255,255,0.15) 100%)`,
+                    }}
+                    className="h-1 w-24 cursor-pointer appearance-none rounded-full [&::-moz-range-thumb]:size-2.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#ff5a3c] [&::-webkit-slider-thumb]:size-2.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#ff5a3c] [&::-webkit-slider-thumb]:shadow-[0_0_0_3px_rgba(255,90,60,0.16)]"
                   />
                 </div>
 
