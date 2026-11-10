@@ -18,6 +18,7 @@ interface UserRow {
   password_hash?: string;
   avatar?: string | null;
   status?: number | string;
+  role?: string | null;
 }
 
 export function isDuplicateKeyError(error: unknown): boolean {
@@ -44,7 +45,7 @@ export async function findUserByUsername(username: string): Promise<AuthUser | n
 /** 读取会话用户；账号被禁用/删除时返回 null。 */
 export async function findSessionUser(id: number): Promise<SessionUser | null> {
   const row = (await db("lab_user")
-    .select("id", "username", "avatar")
+    .select("id", "username", "avatar", "role")
     .where({ id })
     .where("status", 1)
     .first()) as UserRow | undefined;
@@ -55,6 +56,7 @@ export async function findSessionUser(id: number): Promise<SessionUser | null> {
     id: Number(row.id),
     username: row.username,
     avatar: avatar || null,
+    role: row.role === "admin" ? "admin" : "user",
   };
 }
 
@@ -73,6 +75,7 @@ export async function createUser(input: {
       id: Number(insertId),
       username: input.username,
       avatar: null,
+      role: "user",
     };
   } catch (error) {
     if (isDuplicateKeyError(error)) return null;

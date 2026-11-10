@@ -1,12 +1,25 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Disc3, Heart, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Bell,
+  Disc3,
+  FileClock,
+  Heart,
+  MessageSquare,
+  ShieldCheck,
+  Sparkles,
+  UploadCloud,
+} from "lucide-react";
 import { ContinueListening } from "@/components/continue-listening";
 import { EmptyState } from "@/components/empty-state";
 import { LogoutButton } from "@/components/logout-button";
 import { SoundCard } from "@/components/sound-card";
 import { requireUser } from "@/lib/auth";
+import { getUnreadCounts } from "@/lib/queries/social";
+import { getMySubmissions } from "@/lib/queries/submissions";
 import { getFavoriteSounds } from "@/lib/queries/sounds";
 import { assetUrl, formatDate, greeting, initials } from "@/lib/utils";
 
@@ -18,7 +31,14 @@ export const metadata: Metadata = {
 
 export default async function MePage() {
   const user = await requireUser("/me");
-  const favorites = await getFavoriteSounds(user.id, 1);
+  const [favorites, unread, submissions] = await Promise.all([
+    getFavoriteSounds(user.id, 1),
+    getUnreadCounts(user.id),
+    getMySubmissions(user.id),
+  ]);
+  const pendingSubmissions = submissions.filter(
+    (submission) => submission.status === "pending",
+  ).length;
   const recent = favorites.items.slice(0, 4);
   const favoritedIds = new Set(recent.map((sound) => sound.id));
   const avatar = assetUrl(user.avatar);
@@ -98,6 +118,92 @@ export default async function MePage() {
           <Disc3 className="size-5 text-mist/70" strokeWidth={1.5} aria-hidden />
         </div>
       </div>
+
+      <section aria-label="快捷入口" className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[
+          {
+            href: "/submit",
+            label: "投稿声音",
+            hint: "分享一段声音",
+            icon: UploadCloud,
+            badge: 0,
+          },
+          {
+            href: "/me/submissions",
+            label: "我的投稿",
+            hint:
+              pendingSubmissions > 0
+                ? `${pendingSubmissions} 条待审核`
+                : submissions.length > 0
+                  ? `${submissions.length} 篇投稿`
+                  : "查看审核状态",
+            icon: FileClock,
+            badge: pendingSubmissions,
+          },
+          {
+            href: "/messages",
+            label: "私信",
+            hint: unread.messages > 0 ? `${unread.messages} 条未读` : "和同好聊聊",
+            icon: MessageSquare,
+            badge: unread.messages,
+          },
+          {
+            href: "/me/notifications",
+            label: "通知",
+            hint:
+              unread.notifications > 0
+                ? `${unread.notifications} 条未读`
+                : "投稿与关注提醒",
+            icon: Bell,
+            badge: unread.notifications,
+          },
+          ...(user.role === "admin"
+            ? [
+                {
+                  href: "/admin",
+                  label: "审核后台",
+                  hint: "处理待审投稿",
+                  icon: ShieldCheck,
+                  badge: 0,
+                },
+              ]
+            : []),
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="group flex flex-col gap-3 rounded-2xl border border-line bg-paper-warm/60 p-4 transition duration-300 hover:border-coral/35 hover:bg-paper-warm"
+            >
+              <span className="flex items-center justify-between">
+                <span className="grid size-9 place-items-center rounded-full border border-line/80 bg-paper text-ink-soft">
+                  <Icon className="size-4" strokeWidth={1.7} aria-hidden />
+                </span>
+                {item.badge > 0 ? (
+                  <span className="grid h-5 min-w-5 place-items-center rounded-full bg-coral px-1.5 text-[10px] font-semibold leading-none text-white">
+                    {item.badge > 9 ? "9+" : item.badge}
+                  </span>
+                ) : (
+                  <ArrowUpRight
+                    className="size-3.5 text-ink-muted opacity-0 transition duration-300 group-hover:opacity-100"
+                    strokeWidth={1.8}
+                    aria-hidden
+                  />
+                )}
+              </span>
+              <span>
+                <span className="block text-sm font-medium text-ink">
+                  {item.label}
+                </span>
+                <span className="mt-0.5 block truncate text-[11px] text-ink-muted">
+                  {item.hint}
+                </span>
+              </span>
+            </Link>
+          );
+        })}
+      </section>
 
       <ContinueListening />
 

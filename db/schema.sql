@@ -24,7 +24,11 @@ CREATE TABLE IF NOT EXISTS `lab_music` (
   `author` VARCHAR(128) NOT NULL DEFAULT '',
   `url` VARCHAR(500) NOT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  -- 0 = 待审核，1 = 已发布，2 = 未通过
   `status` TINYINT NOT NULL DEFAULT 1,
+  `review_reason` VARCHAR(500) NOT NULL DEFAULT '',
+  `reviewed_by` INT UNSIGNED NULL,
+  `reviewed_at` DATETIME NULL,
   `top` TINYINT NOT NULL DEFAULT 0,
   `hot` TINYINT NOT NULL DEFAULT 0,
   `photo` VARCHAR(500) NOT NULL DEFAULT '',
@@ -33,7 +37,9 @@ CREATE TABLE IF NOT EXISTS `lab_music` (
   PRIMARY KEY (`id`),
   KEY `idx_lab_music_category_created` (`music_category_id`, `created`),
   KEY `idx_lab_music_created` (`created`),
-  KEY `idx_lab_music_status_top` (`status`, `top`)
+  KEY `idx_lab_music_status_top` (`status`, `top`),
+  KEY `idx_lab_music_status_created` (`status`, `created`),
+  KEY `idx_lab_music_uid_status` (`uid`, `status`, `created`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `lab_user` (
@@ -43,6 +49,7 @@ CREATE TABLE IF NOT EXISTS `lab_user` (
   `email` VARCHAR(255) NULL,
   `avatar` VARCHAR(500) NULL,
   `status` TINYINT NOT NULL DEFAULT 1,
+  `role` VARCHAR(16) NOT NULL DEFAULT 'user',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_login` DATETIME NULL,
   PRIMARY KEY (`id`),
@@ -58,4 +65,39 @@ CREATE TABLE IF NOT EXISTS `lab_favorite` (
   UNIQUE KEY `uk_lab_favorite_uid_music` (`uid`, `music_id`),
   KEY `idx_lab_favorite_music` (`music_id`),
   KEY `idx_lab_favorite_uid_created` (`uid`, `created`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `lab_follow` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `follower_id` INT UNSIGNED NOT NULL,
+  `following_id` INT UNSIGNED NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_lab_follow_pair` (`follower_id`, `following_id`),
+  KEY `idx_lab_follow_following` (`following_id`, `created`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `lab_message` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `sender_id` INT UNSIGNED NOT NULL,
+  `receiver_id` INT UNSIGNED NOT NULL,
+  `body` VARCHAR(2000) NOT NULL,
+  `read_at` DATETIME NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_lab_message_pair` (`sender_id`, `receiver_id`, `created`),
+  KEY `idx_lab_message_inbox` (`receiver_id`, `read_at`, `created`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `lab_notification` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `uid` INT UNSIGNED NOT NULL,
+  `type` VARCHAR(32) NOT NULL,
+  `title` VARCHAR(120) NOT NULL,
+  `body` VARCHAR(1000) NOT NULL,
+  `link` VARCHAR(255) NOT NULL DEFAULT '',
+  `read_at` DATETIME NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_lab_notification_uid` (`uid`, `read_at`, `created`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -19,6 +19,10 @@
 - **全局播放器**：跨页面不中断的底部播放台，播放队列取自当前列表；`/music/play?id=x` 兼容旧链接并 307 到详情页
 - **账号**：登录 / 注册 / 登出（iron-session cookie 会话），`/me` 与 `/me/favorites` 需要登录
 - **收藏**：登录用户可收藏 / 取消收藏，数据库唯一键保证幂等
+- **投稿**：登录用户可在 `/submit` 上传音频和可选封面（OSS），投稿进入待审核，通过后才公开
+- **审核后台**：`/admin/reviews` 查看待审队列，试听后通过或驳回；驳回必须填写原因
+- **系统通知**：审核结果写入 `/me/notifications`，未读数量在头部铃铛与移动端「我的」tab 显示
+- **关注与私信**：`/u/[id]` 关注/取关，`/messages` 私信会话；打开会话自动标记已读，未读数每 30s 轮询
 - **健康检查**：`/api/health` 对数据库执行 `select 1`，供容器与 k8s 探针使用
 
 ## 技术栈
@@ -29,6 +33,7 @@
 | UI | React 19.3、TypeScript 5、Tailwind CSS 4、lucide-react、sonner |
 | 数据 | MySQL 8.0（utf8mb4）、Knex + mysql2，全部参数化查询 |
 | 认证 | iron-session（cookie 加密会话）、bcryptjs（cost 12） |
+| 上传 | ali-oss（服务端直传 OSS，音频 100MB / 封面 5MB 上限） |
 | 校验 | zod；登录/注册带进程内限流（登录 10 次 / 10 分钟，注册 5 次 / 小时） |
 | 工具链 | pnpm 10.26.2、ESLint、Node 内置 test runner（tsx 运行） |
 | 部署 | 多阶段 Dockerfile、docker compose（MySQL）、k3s（Deployment + Service + Ingress），见 [`deploy/README.md`](./deploy/README.md) |
@@ -72,7 +77,7 @@ pnpm dev          # http://localhost:3000
 密码：  demo1234
 ```
 
-登录后可以体验收藏、`/me`、`/me/favorites`。种子还会写入约 180 条曲目数据（见 `data/live-sounds.json`），足够把首页、分区、搜索、详情和播放器走一遍。
+登录后可以体验收藏、投稿、私信与通知；本地还可用 `momo/momo1234` 测试互相关注。管理员用 `pnpm admin:create` 创建（见 `.env.example` 的 `ADMIN_USERNAME`/`ADMIN_PASSWORD`，生产管理员密码只在运维侧保管）。种子还会写入约 180 条曲目数据（见 `data/live-sounds.json`），足够把首页、分区、搜索、详情和播放器走一遍。
 
 ## 常用脚本
 
@@ -84,9 +89,11 @@ pnpm dev          # http://localhost:3000
 | `pnpm lint` | ESLint 检查 |
 | `pnpm typecheck` | `tsc --noEmit` 类型检查 |
 | `pnpm test` | Node 内置 test runner，运行 `tests/*.test.ts` |
+| `pnpm test:backend` | 运行 `tests/backend/*.test.ts`（社交/投稿/审核，需要本地 MySQL 与 OSS 配置） |
 | `pnpm db:init` | 执行 `db/schema.sql`（建表）并 upsert 分类数据 |
 | `pnpm db:seed` | 写入曲目、demo 用户与示例收藏（幂等；生产环境默认拒绝执行） |
 | `pnpm scrape` | 从线上站点抓取曲目列表，更新 `data/live-sounds.json` |
+| `pnpm admin:create` | 创建/更新管理员（读 `ADMIN_USERNAME`、`ADMIN_PASSWORD`） |
 
 > `db:init` / `db:seed` 依赖 `devDependencies` 里的 `tsx`，不在运行镜像内；生产环境的迁移方式见 [`deploy/README.md`](./deploy/README.md)。
 
@@ -96,12 +103,22 @@ pnpm dev          # http://localhost:3000
 node-web/
 ├─ app/                     # App Router 路由
 │  ├─ api/health/           # GET /api/health → select 1，200/503
+│  ├─ api/submissions/       # POST 投稿（multipart + OSS）
+│  ├─ api/unread/            # 未读数轮询
 │  ├─ category/[slug]/      # 四个分区列表 + 分页
 │  ├─ search/               # 搜索
 │  ├─ sound/[id]/           # 声音详情
 │  ├─ music/play/           # 旧链接兼容，307 → /sound/[id]
 │  ├─ login/ register/ logout/
-│  ├─ me/ me/favorites/     # 登录后可见
+│  ├─ submit/                # 投稿上传
+│  ├─ admin/                 # 管理后台 / 审核
+│  ├─ u/[id]/                # 用户主页 / 关注
+│  ├─ messages/              # 私信
+│  ├─ me/ me/favorites/      # 个人主页 / 收藏
+│  ├─ me/submissions/        # 我的投稿
+│  ├─ me/notifications/      # 系统通知
+│  ├─ messages/[id]/         # 私信会话
+│  ├─ admin/reviews/         # 审核后台
 │  ├─ layout.tsx            # 全局布局：导航、播放器 Provider
 │  ├─ globals.css           # Tailwind 4 + 设计变量
 │  ├─ not-found.tsx / error.tsx
@@ -110,13 +127,16 @@ node-web/
 │  ├─ layout/               # 头部、底部、导航
 │  ├─ player/               # 播放台、队列、进度
 │  ├─ auth/                 # 登录 / 注册表单
+│  ├─ admin/                # 审核操作组件
+│  ├─ social/               # 用户、关注、私信、通知组件
 │  ├─ sound-card.tsx        # 声音卡片（封面兜底、统计）
 │  ├─ favorite-button.tsx
 │  └─ section-rail.tsx / empty-state.tsx
 ├─ lib/
 │  ├─ db.ts / db-config.ts  # Knex 单例与连接配置
-│  ├─ queries/              # 服务端查询（sounds / categories / favorites）
-│  ├─ actions/              # Server Actions（auth / favorites）
+│  ├─ queries/              # 服务端查询（sounds / categories / favorites / social / submissions）
+│  ├─ actions/              # Server Actions（auth / favorites / social / admin）
+│  ├─ oss.ts                # OSS 上传/删除
 │  ├─ auth.ts               # getSessionUser / requireUser
 │  ├─ validation.ts / rate-limit.ts
 │  ├─ player-context.tsx    # 全局播放器状态
@@ -133,8 +153,8 @@ node-web/
 
 ## 数据与数据库
 
-- 数据表：`lab_category`（分区/分类）、`lab_music`（声音条目）、`lab_user`（账号）、`lab_favorite`（收藏，`(uid, music_id)` 唯一）。
-- `db/schema.sql` 只含 DDL，全部 `CREATE TABLE IF NOT EXISTS`，可反复执行。
+- 数据表：`lab_category`（分区/分类）、`lab_music`（声音条目，`status` 0 待审 / 1 发布 / 2 驳回）、`lab_user`（账号，`role` user/admin）、`lab_favorite`（收藏，`(uid, music_id)` 唯一）、`lab_follow`（关注）、`lab_message`（私信）、`lab_notification`（系统通知）。
+- `db/schema.sql` 只含 DDL，全部 `CREATE TABLE IF NOT EXISTS`，可反复执行；已有库升级社交功能时执行 `db/migrations/002_social.sql`。
 - `scripts/db-init.ts` 建表后 upsert 6 个分类（ASMR / VOCALOID / 轻音乐 / 有声书 / 音乐-其他 / 杂谈）。
 - `scripts/seed.ts` 读取 `data/live-sounds.json` 写入曲目，再创建 `demo/demo1234` 与 4 条示例收藏；全部使用 `onConflict().ignore()/merge()`，重复执行安全。生产环境默认拒绝执行，需显式 `ALLOW_PROD_SEED=1`。
 - 站点中封面与音频走 `OSS_BASE_URL`（默认阿里云 OSS bucket），空封面由 `COVER_FALLBACKS` 渐变兜底。
@@ -150,6 +170,7 @@ pnpm typecheck    # 类型
 pnpm lint         # 规范
 pnpm build        # 生产构建
 pnpm test         # tests/*.test.ts
+pnpm test:backend # tests/backend/*.test.ts（需要本地 DB/OSS）
 ```
 
 端到端 smoke（生产模式起服务后逐条 curl 关键路由、检查重定向与健康接口）的结果记录在 [`tests/smoke/report.md`](./tests/smoke/report.md)，包含命令、HTTP 状态与失败项。
@@ -174,6 +195,13 @@ kubectl rollout status deployment/node-web
 ## legacy/ 归档
 
 `legacy/` 保存重构前的单页应用（Express + fish-route 单页应用 + 旧 Dockerfile、`k8s.yaml`、`Makefile`），仅作迁移对照与视觉参考，已在 `.gitignore` 中忽略、不参与新项目构建。旧部署的 NodePort/registry 做法可以在 `deploy/README.md` 的“不用 Ingress”一节找到对应说明。
+
+## 投稿与后台
+
+- 投稿文件直传 OSS：音频 `sound/uploads/YYYY/MM/`、封面 `cover/uploads/YYYY/MM/`，数据库只存相对路径。
+- 审核通过后 `lab_music.status=1` 才会进入首页、分区、搜索与详情页；驳回原因写入 `review_reason` 并生成站内通知。
+- 生产管理员入口 `/admin`（仅 `role=admin`）；未登录访问 `/submit`、`/messages`、`/me/submissions` 会重定向登录。
+- 上传上限：音频 100MB、封面 5MB；生产 nginx 已配 `client_max_body_size 200M`。
 
 ## 已知约定
 

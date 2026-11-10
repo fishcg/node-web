@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Heart, Home, Music2, UserRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useUnreadCounts, UnreadBadge } from "@/components/unread-badges";
+import type { UnreadCounts } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface Tab {
@@ -43,8 +45,14 @@ const TABS: Tab[] = [
 ];
 
 /** Mobile-only bottom tab bar; the mini player docks just above it. */
-export function MobileNav() {
+export function MobileNav({
+  initialUnread,
+}: {
+  initialUnread: UnreadCounts;
+}) {
   const pathname = usePathname();
+  const unread = useUnreadCounts(initialUnread);
+  const totalUnread = unread.notifications + unread.messages;
 
   if (
     pathname === "/login" ||
@@ -76,7 +84,7 @@ export function MobileNav() {
             >
               <span
                 className={cn(
-                  "grid h-7 w-12 place-items-center rounded-full transition-colors duration-300",
+                  "relative grid h-7 w-12 place-items-center rounded-full transition-colors duration-300",
                   active ? "bg-coral/12 text-coral-deep" : "bg-transparent",
                 )}
               >
@@ -85,6 +93,9 @@ export function MobileNav() {
                   strokeWidth={active ? 2 : 1.6}
                   aria-hidden
                 />
+                {tab.href === "/me" ? (
+                  <UnreadBadge count={totalUnread} />
+                ) : null}
               </span>
               {tab.label}
             </Link>

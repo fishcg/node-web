@@ -2,7 +2,7 @@ import "server-only";
 
 import { getIronSession, type IronSession, type SessionOptions } from "iron-session";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 
 import { findSessionUser } from "@/lib/queries/users";
@@ -61,4 +61,11 @@ export async function requireUser(nextPath = "/me"): Promise<SessionUser> {
   const user = await getSessionUser();
   if (user) return user;
   redirect(`/login?next=${encodeURIComponent(safeNextPath(nextPath))}`);
+}
+
+/** 管理员守卫：未登录去登录页，已登录但不是管理员直接 404（不暴露后台存在）。 */
+export async function requireAdmin(nextPath = "/admin"): Promise<SessionUser> {
+  const user = await requireUser(nextPath);
+  if (user.role !== "admin") notFound();
+  return user;
 }

@@ -19,7 +19,21 @@ export function getDbConfig(): Knex.Config {
       dateStrings: true,
       timezone: "+08:00",
     },
-    pool: { min: 0, max: 10 },
+    pool: {
+      min: 0,
+      max: 10,
+      // MySQL defaults to UTC in the container; pin every app connection to
+      // China time so CURRENT_TIMESTAMP defaults (messages, notifications)
+      // match what users see.
+      afterCreate: (
+        connection: { query: (sql: string, callback: (error: Error | null) => void) => void },
+        done: (error: Error | null, connection: unknown) => void,
+      ) => {
+        connection.query("SET time_zone = '+08:00'", (error) => {
+          done(error, connection);
+        });
+      },
+    },
     acquireConnectionTimeout: 10_000,
   };
 }

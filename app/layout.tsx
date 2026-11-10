@@ -6,6 +6,9 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { MiniPlayer } from "@/components/player/mini-player";
 import { PlayerProvider } from "@/components/player/player-provider";
 import { SITE } from "@/lib/constants";
+import { getSessionUser } from "@/lib/auth";
+import { getUnreadCounts } from "@/lib/queries/social";
+import type { UnreadCounts } from "@/lib/types";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -52,7 +55,14 @@ export const viewport: Viewport = {
   themeColor: "#f7f3ec",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+const ZERO_UNREAD: UnreadCounts = { notifications: 0, messages: 0 };
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // The header and the mobile tab bar both need the counters; read them once
+  // per request and ship them as the client-side starting values.
+  const user = await getSessionUser();
+  const unread = user ? await getUnreadCounts(user.id) : ZERO_UNREAD;
+
   return (
     <html lang="zh-CN">
       <body className="bg-paper text-ink antialiased">
@@ -65,14 +75,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </a>
 
           <div className="flex min-h-dvh flex-col">
-            <SiteHeader />
+            <SiteHeader initialUnread={unread} />
             <main id="main" className="flex-1">
               {children}
             </main>
             <SiteFooter />
           </div>
 
-          <MobileNav />
+          <MobileNav initialUnread={unread} />
           <MiniPlayer />
           <Toaster
             position="top-center"

@@ -14,7 +14,9 @@ const nextConfig: NextConfig = {
     process.env.NODE_ENV === "development"
       ? ["127.0.0.1", "127.0.0.1:3000", "localhost", "localhost:3000"]
       : undefined,
-  serverExternalPackages: ["knex", "mysql2"],
+  // ali-oss pulls in urllib, which lazily requires the optional `proxy-agent`
+  // package. Keep it external so Turbopack does not try to bundle that path.
+  serverExternalPackages: ["knex", "mysql2", "ali-oss"],
   images: {
     loader: "custom",
     loaderFile: "./lib/image-loader.ts",

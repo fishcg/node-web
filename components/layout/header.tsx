@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, ShieldCheck } from "lucide-react";
 import { SiteNav } from "@/components/layout/site-nav";
+import { HeaderUnread } from "@/components/unread-badges";
+import type { UnreadCounts } from "@/lib/types";
 import { getSessionUser } from "@/lib/auth";
 import { assetUrl, initials } from "@/lib/utils";
 
@@ -9,7 +11,11 @@ import { assetUrl, initials } from "@/lib/utils";
  * Sticky top bar. Reads the session on the server so the account chip never
  * flashes the signed-out state.
  */
-export async function SiteHeader() {
+export async function SiteHeader({
+  initialUnread,
+}: {
+  initialUnread: UnreadCounts;
+}) {
   const user = await getSessionUser();
   const avatar = user ? assetUrl(user.avatar) : null;
 
@@ -47,6 +53,21 @@ export async function SiteHeader() {
           >
             <Search className="size-[18px]" strokeWidth={1.7} aria-hidden />
           </Link>
+
+          {user ? (
+            <HeaderUnread initial={initialUnread} />
+          ) : null}
+
+          {user?.role === "admin" ? (
+            <Link
+              href="/admin"
+              aria-label="审核后台"
+              title="审核后台"
+              className="hidden size-9 place-items-center rounded-full border border-transparent text-ink-soft transition duration-300 hover:border-line hover:bg-paper-warm hover:text-ink md:grid"
+            >
+              <ShieldCheck className="size-[18px]" strokeWidth={1.7} aria-hidden />
+            </Link>
+          ) : null}
 
           {user ? (
             <Link

@@ -11,9 +11,12 @@
     "db:init": "tsx scripts/db-init.ts",
     "db:seed": "tsx scripts/seed.ts",
     "scrape": "tsx scripts/scrape-live.ts",
-    "test": "tsx --test tests/*.test.ts"
+    "test": "tsx --test tests/*.test.ts",
+    "admin:create": "tsx scripts/create-admin.ts",
+    "test:backend": "node --conditions=react-server --import tsx --test tests/backend/*.test.ts"
   },
   "dependencies": {
+    "ali-oss": "^6.23.0",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "iron-session": "^9.0.1",

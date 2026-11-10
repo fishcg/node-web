@@ -11,7 +11,12 @@
 # ---------------------------------------------------------------------------
 ARG APK_MIRROR=dl-cdn.alpinelinux.org
 
-FROM node:24-alpine AS base
+# The Node base image can be overridden for environments that mirror
+# node:24-alpine under a versioned tag in an internal registry, e.g.
+#   --build-arg NODE_IMAGE=172.24.173.77:30500/node:24.13.0-alpine
+ARG NODE_IMAGE=node:24-alpine
+
+FROM ${NODE_IMAGE} AS base
 
 ENV PNPM_HOME=/pnpm \
     PATH=/pnpm:$PATH \
@@ -69,7 +74,7 @@ RUN mkdir -p public && pnpm build
 # ---------------------------------------------------------------------------
 # runner: minimal runtime, non-root user
 # ---------------------------------------------------------------------------
-FROM node:24-alpine AS runner
+FROM ${NODE_IMAGE} AS runner
 
 WORKDIR /app
 
