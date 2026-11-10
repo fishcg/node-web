@@ -12,8 +12,8 @@
 | k3s 控制面 | node0 `120.27.204.155`（内网 `172.24.173.77`） |
 | nginx / 证书 / MySQL | node1 `47.97.156.213`（内网 `172.24.173.76`） |
 | 新应用 | Deployment `node-web-next`，1 副本，容器端口 8989 |
-| 新应用镜像 | `172.24.173.77:30500/node-web:social-20261110-2015`（社交功能 + 时区修复） |
-| 代码提交 | `ffbe9e5`（分支 `rebuild/nextjs`，已 push GitHub） |
+| 新应用镜像 | `172.24.173.77:30500/node-web:comments-1c31fe5`（评论/点赞 + 社交 + 时区修复） |
+| 代码提交 | `1c31fe5`（分支 `rebuild/nextjs`，已 push GitHub） |
 | 新应用 Service | `node-web-next-service`，NodePort **30190** |
 | 旧应用（保留） | Deployment `node-web`，Service `node-web-service`，NodePort 30089 |
 | 生产数据库 | node1 Docker 容器 `test_mysql`（3307→3306），库 `acgay`，用户 `acgay_app` |
@@ -25,14 +25,16 @@
 - 旧库 `fish` 未改动；切换前备份：`/root/backups/fish-lab-20261110.sql`。
 - 新库 `acgay`：500 条声音（ASMR 96 / VOCALOID 78 / 轻音乐 62 / 有声书 3 / 音乐-其他 261），6 个分类。
 - 切换后备份：`/root/backups/acgay-20261110.sql`；社交功能上线前备份：`/root/backups/acgay-20261110-social.sql`。
+- 2026-11-10 已执行 `db/migrations/003_comments.sql`：新增 `lab_comment`（`(music_id,status,id)` 索引）与 `lab_comment_like`（`(comment_id,uid)` 唯一）；评论只允许在 `status=1` 的声音下创建，点赞/评论均需登录。
 - 2026-11-10 已执行 `db/migrations/002_social.sql`：`lab_user.role`、`lab_music.status/review_reason/reviewed_by/reviewed_at`，以及 `lab_follow`、`lab_message`、`lab_notification` 三张表。迁移在执行前已校验 information_schema；MySQL 不支持 `ADD COLUMN IF NOT EXISTS`，重跑前需先确认列/索引不存在。
 - 生产账号：仅 `admin`（管理员，id 3）；管理员密码只在运维侧保管，不写入仓库。旧数据 `uid` 已统一归零；早期测试账号 `fish` 已删除。
-- 社交功能上线 QA 的测试用户、投稿、关注、私信、通知与 OSS 测试对象已全部清理。
+- 社交功能上线 QA 的测试用户、投稿、关注、私信、通知与 OSS 测试对象已全部清理；评论功能上线 QA 的临时评论与点赞已删除，`lab_music.replies` 与 `lab_comment_like` 计数归零。
 - 迁移时已排除 `id=402` 的畸形外链、`id=603/604` 的 `/tem/` 与 test 行；旧 `status=0` 的 498 条已置为 1（旧站本身也未按 status 过滤，视觉目录保持一致）；外站 missevan 封面置空，由前端渐变 + 耳机图标兜底。
 
-## 社交功能与上传
+## 评论、社交与上传
 
 - `/submit` 投稿：音频 ≤100MB、封面 ≤5MB（JPEG/PNG/WebP），文件上传到 OSS `sound/uploads/YYYY/MM/` 与 `cover/uploads/YYYY/MM/`；`/admin/reviews` 审核通过后才会公开，驳回必须填写原因（≤500 字）。
+- `/sound/[id]` 评论：首屏 20 条，游标分页；一次 join 用户 + 一次 `whereIn` 回填当前用户点赞，避免 N+1；`lab_music.replies` 与 `like_count` 在事务内维护。
 - `/messages` 私信、`/me/notifications` 通知、`/u/[id]` 关注；未读数由 `/api/unread` 提供，前端每 30s 轮询并支持 `acgay:unread-refresh` 事件即时刷新。
 - 生产 nginx 已配置 `client_max_body_size 200M`，大于应用层 100MB 上限，上传不需要再改 nginx。
 - Knex 连接池在 `afterCreate` 中执行 `SET time_zone = '+08:00'`（`lib/db-config.ts`），保证 `CURRENT_TIMESTAMP` 写库为中国时间；生产 `test_mysql` 容器本身仍是 UTC，查询时看到的会话 `NOW()` 可能比北京时间慢 8 小时，以应用写入值为准。
@@ -80,4 +82,4 @@ kubectl -n default rollout status deployment/node-web-next
 
 注意：`ARG APK_MIRROR` 必须在每个使用它的构建阶段重新声明（Dockerfile 已处理）；`NODE_IMAGE` 由 Dockerfile 顶部 `ARG NODE_IMAGE=node:24-alpine` 提供，生产构建传入内网 registry 的 `node:24.13.0-alpine`；`NEXT_PUBLIC_SITE_URL` 在构建期内联，改域名必须重新构建。
 
-镜像标签：`social-20261110-2015`（最终上线）；`social-20261110-2010` 是同一代码在时区修复前的构建，已弃用，不要回滚到它。上一个稳定版本为 `080101a`。
+镜像标签：`comments-1c31fe5`（当前上线，评论/点赞 + 社交 + 时区修复）；`social-20261110-2015`（上一版社交功能）；`social-20261110-2010` 是同一代码在时区修复前的构建，已弃用，不要回滚到它。再往前稳定版本为 `080101a`。
