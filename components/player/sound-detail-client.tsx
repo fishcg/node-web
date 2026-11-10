@@ -75,6 +75,9 @@ export function SoundDetailClient({
   const shownProgress = active ? progress : 0;
   const shownDuration = active ? duration : 0;
   const seekable = active && shownDuration > 0;
+  const progressPercent = seekable
+    ? Math.min(100, Math.max(0, (shownProgress / shownDuration) * 100))
+    : 0;
   const totalTimeLabel = shownDuration > 0 ? formatDuration(shownDuration) : "--:--";
   // A missing audio source is an empty state, not a fatal error: keep the page
   // browsable but make the transport controls clearly inert.
@@ -364,7 +367,10 @@ export function SoundDetailClient({
                 onChange={handleSeek}
                 disabled={!seekable || !playable}
                 aria-label="播放进度"
-                className="mt-1.5 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-[#ff5a3c] disabled:cursor-not-allowed disabled:opacity-50"
+                style={{
+                  background: `linear-gradient(to right, #ff5a3c 0%, #ff5a3c ${progressPercent}%, rgba(255,255,255,0.15) ${progressPercent}%, rgba(255,255,255,0.15) 100%)`,
+                }}
+                className="mt-1.5 h-1.5 w-full cursor-pointer appearance-none rounded-full [&::-moz-range-thumb]:size-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#ff5a3c] [&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#ff5a3c] [&::-webkit-slider-thumb]:shadow-[0_0_0_4px_rgba(255,90,60,0.16)] disabled:cursor-not-allowed disabled:opacity-50"
               />
 
               <div className="mt-4 flex flex-wrap items-center justify-center gap-3 sm:flex-nowrap sm:justify-start sm:gap-4">
@@ -373,14 +379,11 @@ export function SoundDetailClient({
                   onClick={() => handleSkip(-SKIP_SECONDS)}
                   disabled={!active || !playable}
                   aria-label={`后退 ${SKIP_SECONDS} 秒`}
-                  className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/70 transition hover:border-white/30 hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 disabled:active:scale-100"
+                  className="inline-flex size-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-full border border-white/10 text-white/70 transition hover:border-white/30 hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 disabled:active:scale-100"
                 >
-                  <RotateCcw aria-hidden="true" className="size-5" />
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-0 flex items-center justify-center pt-1.5 text-[8px] font-bold tracking-tight"
-                  >
-                    {SKIP_SECONDS}
+                  <RotateCcw aria-hidden="true" className="size-4" />
+                  <span className="text-[9px] font-semibold leading-none tracking-tight">
+                    {SKIP_SECONDS}s
                   </span>
                 </button>
 
@@ -403,14 +406,11 @@ export function SoundDetailClient({
                   onClick={() => handleSkip(SKIP_SECONDS)}
                   disabled={!active || !playable}
                   aria-label={`快进 ${SKIP_SECONDS} 秒`}
-                  className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/70 transition hover:border-white/30 hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 disabled:active:scale-100"
+                  className="inline-flex size-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-full border border-white/10 text-white/70 transition hover:border-white/30 hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 disabled:active:scale-100"
                 >
-                  <RotateCw aria-hidden="true" className="size-5" />
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-0 flex items-center justify-center pt-1.5 text-[8px] font-bold tracking-tight"
-                  >
-                    {SKIP_SECONDS}
+                  <RotateCw aria-hidden="true" className="size-4" />
+                  <span className="text-[9px] font-semibold leading-none tracking-tight">
+                    {SKIP_SECONDS}s
                   </span>
                 </button>
 
