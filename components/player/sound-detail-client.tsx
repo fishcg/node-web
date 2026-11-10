@@ -23,6 +23,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { FavoriteButton } from "@/components/favorite-button";
 import { PlayButton } from "@/components/player/play-button";
 import { toPlayerTrack } from "@/components/sound-card";
+import { CoverFallback } from "@/components/cover-fallback";
 import { COVER_FALLBACKS, SECTION_BY_SLUG } from "@/lib/constants";
 import { usePlayer } from "@/lib/player-context";
 import type { Sound } from "@/lib/types";
@@ -263,16 +264,11 @@ export function SoundDetailClient({
                   className="object-cover"
                 />
               ) : (
-                <div
-                  className={cn(
-                    "flex size-full items-center justify-center bg-gradient-to-br",
-                    coverFallback,
-                  )}
-                >
-                  <span className="font-serif text-6xl text-white/85">
-                    {initials(sound.subject)}
-                  </span>
-                </div>
+                <CoverFallback
+                  id={sound.id}
+                  section={sound.section}
+                  size="lg"
+                />
               )}
               <div
                 aria-hidden="true"
@@ -554,8 +550,6 @@ export function SoundDetailClient({
                 <ul className="divide-y divide-white/5">
                   {related.map((item) => {
                     const itemTrack = toPlayerTrack(item);
-                    const itemFallback =
-                      COVER_FALLBACKS[item.id % COVER_FALLBACKS.length];
                     return (
                       <li key={item.id}>
                         <div className="group flex items-center gap-3 p-3 transition hover:bg-white/[0.04]">
@@ -572,15 +566,11 @@ export function SoundDetailClient({
                                 className="size-full object-cover"
                               />
                             ) : (
-                              <span
-                                aria-hidden="true"
-                                className={cn(
-                                  "flex size-full items-center justify-center bg-gradient-to-br text-sm font-semibold text-white",
-                                  itemFallback,
-                                )}
-                              >
-                                {initials(item.subject)}
-                              </span>
+                              <CoverFallback
+                                id={item.id}
+                                section={item.section}
+                                size="sm"
+                              />
                             )}
                           </Link>
                           <Link href={`/sound/${item.id}`} className="min-w-0 flex-1">

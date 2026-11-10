@@ -9,6 +9,8 @@
 # ---------------------------------------------------------------------------
 # base: Node 24 + the pnpm version pinned in package.json
 # ---------------------------------------------------------------------------
+ARG APK_MIRROR=dl-cdn.alpinelinux.org
+
 FROM node:24-alpine AS base
 
 ENV PNPM_HOME=/pnpm \
@@ -28,8 +30,11 @@ WORKDIR /app
 # ---------------------------------------------------------------------------
 FROM base AS deps
 
+ARG APK_MIRROR
+
 # libc6-compat keeps the prebuilt binaries (if any) happy on musl.
-RUN apk add --no-cache libc6-compat
+RUN sed -i "s#dl-cdn.alpinelinux.org#${APK_MIRROR}#g" /etc/apk/repositories \
+    && apk add --no-cache libc6-compat
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
@@ -41,7 +46,10 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
 # ---------------------------------------------------------------------------
 FROM base AS builder
 
-RUN apk add --no-cache libc6-compat
+ARG APK_MIRROR
+
+RUN sed -i "s#dl-cdn.alpinelinux.org#${APK_MIRROR}#g" /etc/apk/repositories \
+    && apk add --no-cache libc6-compat
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

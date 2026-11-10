@@ -14,10 +14,11 @@ import { HeroPlayButton } from "@/components/hero-play-button";
 import { SectionRail } from "@/components/section-rail";
 import { toPlayerTrack } from "@/components/sound-card";
 import { getSessionUser } from "@/lib/auth";
-import { COVER_FALLBACKS, SECTIONS, SITE } from "@/lib/constants";
+import { CoverFallback } from "@/components/cover-fallback";
+import { SECTIONS, SITE } from "@/lib/constants";
 import { getFavoriteIds, getHomeData } from "@/lib/queries/sounds";
 import type { Sound } from "@/lib/types";
-import { assetUrl, cn, initials } from "@/lib/utils";
+import { assetUrl, cn } from "@/lib/utils";
 
 function HeroCollage({ sounds }: { sounds: Sound[] }) {
   const cards = sounds.slice(0, 4);
@@ -36,9 +37,6 @@ function HeroCollage({ sounds }: { sounds: Sound[] }) {
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
         {cards.map((sound, index) => {
           const cover = assetUrl(sound.photo);
-          const gradient =
-            COVER_FALLBACKS[Math.abs(sound.id) % COVER_FALLBACKS.length];
-
           return (
             <Link
               key={sound.id}
@@ -60,14 +58,7 @@ function HeroCollage({ sounds }: { sounds: Sound[] }) {
                     priority={index < 2}
                   />
                 ) : (
-                  <div
-                    className={cn(
-                      "grid size-full place-items-center bg-linear-to-br font-serif text-4xl text-white/80",
-                      gradient,
-                    )}
-                  >
-                    {initials(sound.subject)}
-                  </div>
+                  <CoverFallback id={sound.id} section={sound.section} />
                 )}
                 <div className="absolute inset-0 bg-linear-to-t from-ink/70 via-ink/0 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-3">

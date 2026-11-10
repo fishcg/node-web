@@ -1,17 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Headphones, Sparkles } from "lucide-react";
+import { CoverFallback } from "@/components/cover-fallback";
 import { FavoriteButton } from "@/components/favorite-button";
 import { PlayButton } from "@/components/player/play-button";
-import { COVER_FALLBACKS, SECTION_BY_SLUG } from "@/lib/constants";
+import { SECTION_BY_SLUG } from "@/lib/constants";
 import type { PlayerTrack, Sound } from "@/lib/types";
-import {
-  assetUrl,
-  cn,
-  formatDate,
-  formatViews,
-  initials,
-} from "@/lib/utils";
+import { assetUrl, cn, formatDate, formatViews } from "@/lib/utils";
 
 interface SoundCardProps {
   sound: Sound;
@@ -33,19 +28,6 @@ export function toPlayerTrack(sound: Sound): PlayerTrack {
   };
 }
 
-function CoverFallback({ sound }: { sound: Sound }) {
-  const gradient = COVER_FALLBACKS[Math.abs(sound.id) % COVER_FALLBACKS.length];
-
-  return (
-    <div className={cn("absolute inset-0 bg-linear-to-br", gradient)}>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_18%,rgba(255,255,255,0.42),transparent_62%)]" />
-      <div className="vinyl-grooves absolute inset-0 opacity-40" />
-      <span className="absolute inset-0 grid place-items-center pb-2 font-serif text-5xl text-white/85 drop-shadow-sm">
-        {initials(sound.subject)}
-      </span>
-    </div>
-  );
-}
 
 /**
  * Cover-led sound card used by every list surface. The cover itself is a
@@ -94,7 +76,7 @@ export function SoundCard({
             className="object-cover transition duration-700 ease-[var(--ease-soft)] group-hover:scale-[1.035]"
           />
         ) : (
-          <CoverFallback sound={sound} />
+          <CoverFallback id={sound.id} section={sound.section} />
         )}
 
         <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/65 via-black/5 to-transparent opacity-90" />

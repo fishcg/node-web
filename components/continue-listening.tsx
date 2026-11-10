@@ -4,10 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { History } from "lucide-react";
 import { useEffect, useState } from "react";
+import { CoverFallback } from "@/components/cover-fallback";
 import { PlayButton } from "@/components/player/play-button";
-import { COVER_FALLBACKS } from "@/lib/constants";
 import type { PlayerTrack } from "@/lib/types";
-import { assetUrl, cn, initials } from "@/lib/utils";
+import { assetUrl } from "@/lib/utils";
 
 const RECENT_KEY = "acgay:recent";
 const MAX_ITEMS = 6;
@@ -73,9 +73,6 @@ export function ContinueListening() {
       <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
         {tracks.map((track) => {
           const cover = assetUrl(track.cover);
-          const gradient =
-            COVER_FALLBACKS[Math.abs(track.id) % COVER_FALLBACKS.length];
-
           return (
             <div
               key={track.id}
@@ -95,14 +92,11 @@ export function ContinueListening() {
                       className="object-cover transition duration-500 group-hover:scale-105"
                     />
                   ) : (
-                    <div
-                      className={cn(
-                        "grid size-full place-items-center bg-linear-to-br font-serif text-lg text-white/85",
-                        gradient,
-                      )}
-                    >
-                      {initials(track.title)}
-                    </div>
+                    <CoverFallback
+                      id={track.id}
+                      section={track.section}
+                      size="sm"
+                    />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">

@@ -5,9 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Pause, Play, X } from "lucide-react";
 import { useState } from "react";
-import { COVER_FALLBACKS } from "@/lib/constants";
+import { CoverFallback } from "@/components/cover-fallback";
 import { usePlayer } from "@/lib/player-context";
-import { cn, initials } from "@/lib/utils";
 
 /**
  * Floating bottom player. Self-positioned: sits just above the mobile tab bar
@@ -28,8 +27,6 @@ export function MiniPlayer() {
 
   const percent =
     duration > 0 ? Math.min(100, Math.max(0, (progress / duration) * 100)) : 0;
-  const fallback = COVER_FALLBACKS[current.id % COVER_FALLBACKS.length];
-
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 px-3 md:bottom-4">
       <div className="pointer-events-auto mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-[#17141b]/95 text-[#f7f3ec] shadow-[0_24px_60px_-24px_rgba(0,0,0,0.8)] backdrop-blur-xl">
@@ -48,15 +45,11 @@ export function MiniPlayer() {
                 className="size-full object-cover"
               />
             ) : (
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "flex size-full items-center justify-center bg-gradient-to-br text-base font-semibold text-white",
-                  fallback,
-                )}
-              >
-                {initials(current.title)}
-              </span>
+              <CoverFallback
+                id={current.id}
+                section={current.section}
+                size="sm"
+              />
             )}
           </Link>
 
